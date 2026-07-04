@@ -1,0 +1,52 @@
+/* Menú lateral fijo */
+.social-sidebar {
+  position: fixed;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 999;
+  
+  /* Fondo semi-transparente */
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 10px 6px;
+  border-radius: 35px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Botones de redes sociales */
+.social-btn {
+  width: 38px;
+  height: 38px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.social-btn:hover {
+  background-color: #ff9800;
+  transform: scale(1.1);
+  box-shadow: 0 6px 12px rgba(255, 152, 0, 0.5);
+}
+
+.social-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Responsive - ocultar en móviles */
+@media (max-width: 768px) {
+  .social-sidebar {
+    display: none;
+  }
+}

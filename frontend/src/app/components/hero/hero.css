@@ -1,0 +1,233 @@
+/* Sección Hero */
+.hero-section {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  .hero-section {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+/* Overlay oscuro */
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  z-index: 1;
+}
+
+/* Contenedor del contenido */
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  width: 100%;
+  color: white;
+  text-align: left;
+}
+
+/* Badge premium */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  border: 1px solid rgba(255, 152, 0, 0.8);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 15px 0;
+  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.25);
+  backdrop-filter: blur(10px);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  animation: badgeglow 2s ease-in-out infinite alternate;
+  max-width: fit-content;
+}
+
+.badge-icon {
+  margin: 0 6px;
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+@keyframes badgeglow {
+  from {
+    box-shadow: 0 8px 25px rgba(255, 152, 0, 0.3);
+  }
+  to {
+    box-shadow: 0 12px 35px rgba(255, 152, 0, 0.5);
+  }
+}
+
+/* Título principal */
+.hero-title {
+  font-size: 42px;
+  font-weight: 600;
+  line-height: 1.1;
+  margin-bottom: 15px;
+  color: white;
+}
+
+.hero-title .highlight {
+  color: #ff9800;
+}
+
+/* Descripción */
+.hero-description {
+  font-size: 14px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 25px;
+  max-width: 500px;
+}
+
+/* Botones */
+.hero-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.btn-primary {
+  background-color: #ff9800;
+  color: white;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #f57c00;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 152, 0, 0.4);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: white;
+  padding: 10px 24px;
+  border: 1px solid white;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background-color: white;
+  color: #1a1a1a;
+  transform: translateY(-2px);
+}
+
+/* Grid de features */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  max-width: 700px;
+}
+
+/* Card de feature */
+.feature-card{
+  background-color: rgba(26,26,26,.7);
+  backdrop-filter: blur(8px);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;
+  padding:16px 14px;
+  transition: .3s;
+}
+
+
+.feature-icon {
+  width: 36px;
+  height: 36px;
+  background-color: rgba(255, 152, 0, 0.15);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  color: #ff9800;
+}
+.feature-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: white;
+}
+
+.feature-text {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 42px;
+  }
+
+  .hero-description {
+    font-size: 16px;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    min-height: auto;
+    padding: 40px 15px;
+  }
+
+  .hero-title {
+    font-size: 32px;
+  }
+
+  .hero-badge {
+    font-size: 12px;
+    padding: 6px 15px;
+  }
+}

@@ -1,0 +1,11 @@
+@if (showChrome()) {
+  <app-header></app-header>
+}
+
+<!-- Router para todas las páginas -->
+<main class="router-content">
+  <router-outlet></router-outlet>
+</main>
+@if (showChrome()) {
+<app-footer></app-footer>
+}

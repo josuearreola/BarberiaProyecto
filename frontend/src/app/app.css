@@ -1,0 +1,100 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: transparent;
+}
+
+/* Scroll suave global */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px; /* Compensa la altura del header fijo */
+}
+
+/* Sección Hero con imagen de fondo */
+.hero-section {
+  width: 100%;
+  height: 600px; /* Ajusta según tu imagen */
+  background-image: url('/fondo_barber.jpg');
+  
+  /* Opciones para evitar distorsión */
+  background-size: cover; /* La imagen cubre todo el espacio */
+  background-position: center center; /* Centra la imagen */
+  background-repeat: no-repeat;
+  
+  margin-top: 80px;
+  position: relative;
+}
+
+/* Secciones de contenido */
+.section {
+  min-height: 500px;
+  padding: 90px 20px 110px;
+  background-color: white;
+}
+
+.section:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.section-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section h2 {
+  font-size: 42px;
+  margin-bottom: 20px;
+  color: #1a1a1a;
+}
+
+.section p {
+  font-size: 18px;
+  color: #666;
+}
+
+/* Main content */
+main {
+  min-height: 400px;
+  background-color: transparent;
+    padding: 0;
+}
+
+/* Responsive - Ajusta altura en móviles */
+@media (max-width: 768px) {
+  .hero-section {
+    height: 400px;
+  }
+
+  .section h2 {
+    font-size: 32px;
+  }
+
+  .section p {
+    font-size: 16px;
+  }
+}
+/* Layout para el router content */
+.router-content {
+  min-height: calc(100vh - 160px);
+  /* Compensar header y footer aproximadamente */
+  flex: 1;
+}
+
+/* Estilos para asegurar que el footer siempre esté al final */
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.router-content {
+  flex: 1;
+}

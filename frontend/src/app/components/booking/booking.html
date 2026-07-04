@@ -1,0 +1,212 @@
+<section class="booking-section">
+  <div class="booking-container">
+    <!-- Encabezado -->
+    <div class="booking-header">
+      <h2 class="booking-title">Agenda Tu Cita</h2>
+      <p class="booking-subtitle">
+        Reserva tu espacio en minutos. Elige tu servicio, fecha y hora preferida
+      </p>
+    </div>
+
+    <div class="booking-content">
+      <!-- Formulario principal -->
+      <div class="booking-form-container">
+        <form class="booking-form" (ngSubmit)="onSubmit()">
+          <!-- Nombre Completo -->
+          <div class="form-group">
+            <label for="fullName">Nombre Completo *</label>
+            <input
+              type="text"
+              id="fullName"
+              [(ngModel)]="bookingForm.fullName"
+              name="fullName"
+              placeholder="Ej. Juan Pérez"
+              minlength="3"
+              maxlength="100"
+              required
+            />
+            @if (fullNameError) {
+            <div class="field-error">{{ fullNameError }}</div>
+            }
+          </div>
+
+          <!-- Teléfono -->
+          <div class="form-group">
+            <label for="phone">Teléfono *</label>
+            <input
+              type="tel"
+              id="phone"
+              [(ngModel)]="bookingForm.phone"
+              name="phone"
+              placeholder="Ej. +52 600 000 000"
+              maxlength="20"
+              required
+            />
+            @if (phoneError) {
+            <div class="field-error">{{ phoneError }}</div>
+            }
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label for="email">Email (opcional)</label>
+            <input
+              type="email"
+              id="email"
+              [(ngModel)]="bookingForm.email"
+              name="email"
+              placeholder="tu@email.com"
+              maxlength="120"
+            />
+            @if (emailError) {
+            <div class="field-error">{{ emailError }}</div>
+            }
+          </div>
+
+          <!-- Seleccionar Servicio -->
+          <div class="form-group">
+            <label for="service">Selecciona el Servicio *</label>
+            <select
+              id="service"
+              [(ngModel)]="bookingForm.service"
+              name="service"
+              required
+            >
+              <option value="">Elige un servicio</option>
+              @for (service of services; track service.name) {
+                <option [value]="service.name">
+                  {{ service.name }} - ${{ service.price }}
+                </option>
+              }
+            </select>
+            @if (serviceError) {
+            <div class="field-error">{{ serviceError }}</div>
+            }
+          </div>
+
+          <!-- Fecha -->
+          <div class="form-group">
+            <label for="date">Fecha *</label>
+            <input
+              type="date"
+              id="date"
+              [(ngModel)]="bookingForm.date"
+              (change)="onDateChange()"
+              name="date"
+              required
+            />
+            @if (dateError) {
+            <div class="field-error">{{ dateError }}</div>
+            }
+          </div>
+
+          <!-- Hora -->
+          <div class="form-group">
+            <label for="time">Hora *</label>
+            @if (dateError) {
+              <div class="field-error">{{ dateError }}</div>
+            } @else {
+              <select
+                id="time"
+                [(ngModel)]="bookingForm.time"
+                name="time"
+                required
+              >
+                <option value="">{{ availableTimeSlots().length === 0 ? 'Sin horarios disponibles' : 'Selecciona una hora' }}</option>
+                @for (time of availableTimeSlots(); track time) {
+                  <option [value]="time">{{ time }}</option>
+                }
+              </select>
+            }
+            @if (timeError) {
+            <div class="field-error">{{ timeError }}</div>
+            }
+          </div>
+
+          <!-- Mensajes de éxito/error -->
+          @if (submitMessage()) {
+            <div class="submit-message" [class.error]="submitError()" [class.success]="!submitError()">
+              {{ submitMessage() }}
+            </div>
+          }
+
+          <!-- Botón de envío -->
+          <button
+            type="submit"
+            class="submit-btn"
+            [disabled]="!isFormValid() || isSubmitting()"
+          >
+            {{ isSubmitting() ? 'Procesando...' : 'Confirmar Reserva' }}
+          </button>
+        </form>
+      </div>
+
+      <!-- Información lateral -->
+      <div class="booking-info">
+        <!-- ¿Por qué elegirnos? -->
+        <div class="benefits-card">
+          <h3 class="benefits-title">¿Por qué elegirnos?</h3>
+          <div class="benefits-list">
+            @for (benefit of benefits; track benefit.title) {
+              <div class="benefit-item">
+                <div class="benefit-icon">
+                  @switch (benefit.icon) {
+                    @case ('certificate') {
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                      </svg>
+                    }
+                    @case ('premium') {
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                      </svg>
+                    }
+                    @case ('exclusive') {
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 11l19 0"/>
+                        <path d="M5 21l14 0"/>
+                        <path d="M6 3l12 0"/>
+                        <path d="M4 7l16 0"/>
+                      </svg>
+                    }
+                    @case ('guarantee') {
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
+                        <path d="M9 12l2 2 4-4"/>
+                      </svg>
+                    }
+                  }
+                </div>
+                <div class="benefit-content">
+                  <h4 class="benefit-title">{{ benefit.title }}</h4>
+                  <p class="benefit-description">{{ benefit.description }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Mini tabla de reservas del cliente (DOM dinámico) -->
+        <div class="appointments-card">
+          <h3 class="appointments-title">Mis reservas</h3>
+          <div id="client-appointments-grid"></div>
+        </div>
+
+        <!-- Horario de Atención -->
+        <div class="schedule-card">
+          <h3 class="schedule-title">Horario de Atención</h3>
+          <div class="schedule-list">
+            @for (item of schedule; track item.day) {
+              <div class="schedule-item" [class.closed]="item.closed">
+                <span class="schedule-day">{{ item.day }}</span>
+                <span class="schedule-hours">{{ item.hours }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

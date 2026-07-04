@@ -1,0 +1,78 @@
+<section class="services-section">
+  <div class="services-container">
+    <!-- Encabezado de la sección -->
+    <div class="services-header">
+      <h2 class="services-title">Nuestros Servicios</h2>
+      <p class="services-subtitle">
+        Ofrecemos una amplia gama de servicios diseñados para que luzcas y te sientas increíble
+      </p>
+    </div>
+
+    <!-- Grid de tarjetas de servicios -->
+    <div class="services-grid">
+      @for (service of services; track service.id) {
+        <div class="service-card">
+          <div class="service-image" [style.background-image]="'url(' + service.image + ')'">
+            <div class="service-overlay"></div>
+            
+            <!-- Icono del servicio -->
+            <div class="service-icon">
+              @switch (service.icon) {
+                @case ('scissors') {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="6" cy="6" r="3"/>
+                    <circle cx="6" cy="18" r="3"/>
+                    <line x1="20" y1="4" x2="8.12" y2="15.88"/>
+                    <line x1="14.47" y1="14.48" x2="20" y2="20"/>
+                    <line x1="8.12" y1="8.12" x2="12" y2="12"/>
+                  </svg>
+                }
+                @case ('star') {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                  </svg>
+                }
+                @case ('beard') {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8.5l-6.76-6.76z"/>
+                  </svg>
+                }
+                @case ('crown') {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11.562 3.266a.5.5 0 0 1 .876 0L14.5 8.5l4.984-1.2a.5.5 0 0 1 .597.736L17 12l3.081 3.964a.5.5 0 0 1-.597.736L14.5 15.5l-2.062 5.234a.5.5 0 0 1-.876 0L9.5 15.5l-4.984 1.2a.5.5 0 0 1-.597-.736L7 12 3.919 8.036a.5.5 0 0 1 .597-.736L9.5 8.5l2.062-5.234Z"/>
+                  </svg>
+                }
+              }
+            </div>
+
+            <!-- Precio -->
+            <div class="service-price">${{ service.price }}</div>
+
+            <!-- Duración -->
+            <div class="service-duration">{{ service.duration }} min</div>
+          </div>
+
+          <div class="service-content">
+            <h3 class="service-name">{{ service.name }}</h3>
+            <p class="service-description">{{ service.description }}</p>
+            <button class="service-btn" (click)="scrollToSection('agendar')">
+              Reservar
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Sección de estadísticas -->
+    <div class="stats-section">
+      <div class="stats-container">
+        @for (stat of stats; track stat.label) {
+          <div class="stat-card">
+            <div class="stat-number" [style.color]="stat.color">{{ stat.number }}</div>
+            <div class="stat-label">{{ stat.label }}</div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>
