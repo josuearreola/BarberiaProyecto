@@ -45,6 +45,12 @@ export class User {
   })
   estado: UserStatus;
 
+  @Column({ name: 'failed_attempts', default: 0 })
+  failedAttempts: number;
+
+  @Column({ name: 'lockout_until', type: 'timestamp with time zone', nullable: true })
+  lockoutUntil: Date | null;
+
   @CreateDateColumn({ name: 'creado_en' })
   creadoEn: Date;
 

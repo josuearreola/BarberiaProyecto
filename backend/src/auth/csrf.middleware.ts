@@ -1,0 +1,46 @@
+import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
+import * as crypto from 'crypto';
+
+@Injectable()
+export class CsrfMiddleware implements NestMiddleware {
+  use(req: Request, res: Response, next: NextFunction) {
+    // 1. Obtener o generar token CSRF para la sesión actual
+    let csrfToken = req.session ? (req.session as any).csrfToken : null;
+    if (!csrfToken) {
+      csrfToken = crypto.randomBytes(32).toString('hex');
+      if (req.session) {
+        (req.session as any).csrfToken = csrfToken;
+      }
+    }
+
+    // 2. Establecer la cookie XSRF-TOKEN para que Angular la lea automáticamente
+    // Angular busca esta cookie por defecto y la envía de vuelta en la cabecera 'X-XSRF-TOKEN'
+    res.cookie('XSRF-TOKEN', csrfToken, {
+      httpOnly: false, // Debe ser false para que Angular pueda leerla desde JS
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+    });
+
+    // 3. Validar peticiones de modificación (POST, PUT, PATCH, DELETE)
+    const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+    if (!safeMethods.includes(req.method)) {
+      const headerToken = req.headers['x-xsrf-token'] || req.headers['x-csrf-token'];
+      const bodyToken = req.body ? req.body._csrf : null;
+
+      const receivedToken = headerToken || bodyToken;
+
+      if (!receivedToken || receivedToken !== csrfToken) {
+        res.status(403).json({
+          statusCode: 403,
+          message: 'Error de validación CSRF. Petición no autorizada.',
+          error: 'Forbidden',
+        });
+        return;
+      }
+    }
+
+    next();
+  }
+}

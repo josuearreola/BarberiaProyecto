@@ -1,0 +1,64 @@
+<div class="roles-container">
+  <!-- Formulario para agregar permiso -->
+  <div class="panel">
+    <h3 class="panel-title">Asociar Nuevo Permiso</h3>
+    <p class="panel-subtitle">Selecciona un rol y asigna un nuevo permiso al sistema.</p>
+
+    @if (errorMessage()) {
+      <div class="message error">{{ errorMessage() }}</div>
+    }
+    @if (successMessage()) {
+      <div class="message success">{{ successMessage() }}</div>
+    }
+
+    <form (ngSubmit)="addPermission()">
+      <div class="form-field">
+        <label for="newRole">Seleccione Rol</label>
+        <select id="newRole" [(ngModel)]="newPermissionRole" name="newRole">
+          <option *ngFor="let r of roles" [value]="r">{{ r | uppercase }}</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="newPerm">Nombre del Permiso</label>
+        <input 
+          id="newPerm" 
+          type="text" 
+          [(ngModel)]="newPermissionName" 
+          name="newPerm" 
+          placeholder="ej. view_audit_logs, manage_appointments" 
+          required 
+        />
+      </div>
+
+      <button type="submit" class="action-btn">Asociar Permiso</button>
+    </form>
+  </div>
+
+  <!-- Visualizador de Permisos Asociados -->
+  <div class="panel">
+    <h3 class="panel-title">Matriz de Privilegios</h3>
+    <p class="panel-subtitle">Permisos activos para cada rol del sistema.</p>
+
+    <div *ngFor="let r of roles; let last = last">
+      <div class="role-block">
+        <div class="role-header">
+          <div class="role-icon" [ngClass]="r">
+            {{ r === 'admin' ? '👑' : '👤' }}
+          </div>
+          <span class="role-name">{{ r | uppercase }}</span>
+        </div>
+        <div class="permissions-area">
+          <span class="perm-tag" *ngFor="let p of getPermissionsForRole(r)">
+            {{ translatePermission(p) }}
+            <button class="perm-remove" (click)="removePermission(r, p)" title="Quitar permiso">&times;</button>
+          </span>
+          <span class="empty-permissions" *ngIf="getPermissionsForRole(r).length === 0">
+            Sin permisos asociados.
+          </span>
+        </div>
+      </div>
+      <hr class="role-divider" *ngIf="!last" />
+    </div>
+  </div>
+</div>

@@ -1,0 +1,469 @@
+/* ═══════════════════════════════════════════════════
+   Admin Users Tab — inherits CSS vars from parent
+   .admin-shell (--bg, --panel, --panel-soft, --line,
+   --text, --muted, --accent, --danger)
+   ═══════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+}
+
+/* ── Panel head ── */
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.panel-head h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.head-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ── Toasts ── */
+.toast {
+  border-radius: 12px;
+  border: 1px solid var(--line, rgba(255,255,255,.12));
+  padding: 10px 14px;
+  font-size: .88rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+  animation: slideIn .22s ease-out;
+}
+
+.toast.success {
+  background: rgba(18, 94, 67, .55);
+  color: #f0fff7;
+  border-color: rgba(74, 222, 128, .25);
+}
+
+.toast.error {
+  background: rgba(124, 23, 23, .55);
+  color: #fff2f2;
+  border-color: rgba(255, 111, 111, .25);
+}
+
+.toast.in-modal {
+  margin-bottom: 14px;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Filter bar ── */
+.filter-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.filter-bar label {
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted, #9fb0d6);
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+/* ── Shared input / select ── */
+input,
+select {
+  width: 100%;
+  border: 1px solid var(--line, rgba(255,255,255,.12));
+  background: var(--panel-soft, #111c35);
+  color: var(--text, #edf2ff);
+  border-radius: 12px;
+  padding: 9px 12px;
+  font-size: .88rem;
+  outline: none;
+  transition: border-color .18s, box-shadow .18s;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--accent, #f8b413);
+  box-shadow: 0 0 0 3px rgba(248, 180, 19, .12);
+}
+
+input::placeholder {
+  color: rgba(159, 176, 214, .45);
+}
+
+/* ── Buttons ── */
+.action-btn,
+.ghost-btn,
+.danger-btn,
+.success-btn {
+  border-radius: 12px;
+  border: 1px solid transparent;
+  padding: 9px 15px;
+  font-weight: 700;
+  font-size: .84rem;
+  cursor: pointer;
+  transition: background .14s, transform .1s, opacity .14s;
+  white-space: nowrap;
+}
+
+.action-btn:disabled,
+.ghost-btn:disabled,
+.danger-btn:disabled,
+.success-btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.action-btn:not(:disabled):active,
+.ghost-btn:not(:disabled):active,
+.danger-btn:not(:disabled):active,
+.success-btn:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+.action-btn {
+  background: var(--accent, #f8b413);
+  color: #1a1200;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: #e5a30f;
+}
+
+.ghost-btn {
+  background: rgba(255,255,255,.03);
+  color: var(--text, #edf2ff);
+  border-color: var(--line, rgba(255,255,255,.12));
+}
+
+.ghost-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,.07);
+}
+
+.danger-btn {
+  background: rgba(122, 27, 27, .7);
+  color: #fff2f2;
+  border-color: rgba(255, 111, 111, .3);
+}
+
+.danger-btn:hover:not(:disabled) {
+  background: rgba(140, 30, 30, .85);
+}
+
+.success-btn {
+  background: rgba(16, 105, 62, .7);
+  color: #f0fff7;
+  border-color: rgba(74, 222, 128, .3);
+}
+
+.success-btn:hover:not(:disabled) {
+  background: rgba(16, 120, 70, .85);
+}
+
+.small {
+  padding: 6px 11px;
+  font-size: .78rem;
+}
+
+/* ── Table ── */
+.table-wrap {
+  margin-top: 16px;
+  border: 1px solid var(--line, rgba(255,255,255,.12));
+  border-radius: 14px;
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 780px;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 11px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, .07);
+}
+
+th {
+  font-size: 11px;
+  color: var(--muted, #9fb0d6);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 600;
+  background: rgba(255, 255, 255, .02);
+}
+
+tbody tr {
+  transition: background .14s;
+}
+
+tbody tr:hover {
+  background: rgba(255, 255, 255, .03);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.bold {
+  font-weight: 700;
+}
+
+.row-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ── Pills ── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: .76rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.pill-gold {
+  background: rgba(248, 180, 19, .12);
+  color: #f8d067;
+  border-color: rgba(248, 180, 19, .2);
+}
+
+.pill-blue {
+  background: rgba(99, 149, 255, .1);
+  color: #93bbff;
+  border-color: rgba(99, 149, 255, .18);
+}
+
+.pill-green {
+  background: rgba(74, 222, 128, .12);
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, .2);
+}
+
+.pill-red {
+  background: rgba(255, 111, 111, .12);
+  color: #ff8888;
+  border-color: rgba(255, 111, 111, .2);
+}
+
+/* ── State cells (loading / empty) ── */
+.state-cell {
+  text-align: center;
+  padding: 40px 16px !important;
+  color: var(--muted, #9fb0d6);
+}
+
+.spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--line, rgba(255,255,255,.12));
+  border-top-color: var(--accent, #f8b413);
+  border-radius: 50%;
+  animation: spin .65s linear infinite;
+  vertical-align: middle;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.state-text {
+  font-size: .85rem;
+  font-style: italic;
+}
+
+/* ── Pager ── */
+.pager {
+  margin-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  color: var(--muted, #9fb0d6);
+  font-size: .84rem;
+}
+
+.pager-btns {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ══════════════════════════════════════════════════
+   MODALS
+   ══════════════════════════════════════════════════ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 7, 17, .76);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.overlay-bg {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.modal {
+  width: min(640px, 100%);
+  border: 1px solid var(--line, rgba(255,255,255,.12));
+  background: linear-gradient(180deg, #0f1a32, #0a1226);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, .5);
+  position: relative;
+  z-index: 1;
+  animation: modalIn .2s ease-out;
+}
+
+.modal-narrow {
+  width: min(460px, 100%);
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(10px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line, rgba(255,255,255,.12));
+  padding-bottom: 12px;
+}
+
+.modal-head h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* ── Form layout inside modals ── */
+.form-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.span-2 {
+  grid-column: 1 / -1;
+}
+
+.field {
+  display: grid;
+  gap: 5px;
+}
+
+.field label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted, #9fb0d6);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.hint {
+  font-size: .7rem;
+  color: var(--muted, #9fb0d6);
+  opacity: .65;
+}
+
+.modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line, rgba(255,255,255,.12));
+}
+
+/* ── Confirm modal ── */
+.confirm h3 {
+  margin: 0 0 10px;
+}
+
+.confirm-desc {
+  margin: 0 0 6px;
+  font-size: .92rem;
+}
+
+.confirm-note {
+  margin: 0 0 4px;
+  font-size: .82rem;
+  color: var(--muted, #9fb0d6);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .panel-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .head-actions {
+    width: 100%;
+  }
+
+  .head-actions button {
+    flex: 1;
+  }
+
+  .filter-actions {
+    justify-content: stretch;
+  }
+
+  .filter-actions button {
+    flex: 1;
+  }
+
+  .pager {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-2col {
+    grid-template-columns: 1fr;
+  }
+
+  .span-2 {
+    grid-column: auto;
+  }
+}

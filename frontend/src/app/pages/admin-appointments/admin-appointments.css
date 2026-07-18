@@ -25,6 +25,12 @@
     margin-bottom: 20px;
 }
 
+.topbar-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
 .eyebrow {
   margin: 0;
   font-size: 12px;

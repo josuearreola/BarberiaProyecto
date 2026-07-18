@@ -1,0 +1,74 @@
+<div class="modal-overlay" *ngIf="currentUser()">
+  <button class="modal-backdrop" type="button" aria-label="Cerrar modal" (click)="onClose()"></button>
+  <div class="modal-card profile-modal-card">
+    <div class="panel-head">
+      <h3>Mi Perfil</h3>
+      <button class="ghost-btn" type="button" (click)="onClose()">Cerrar</button>
+    </div>
+
+    <div class="grid-container">
+      <!-- Información del perfil -->
+      <div class="card">
+        <h2>Actualizar Datos Personales</h2>
+        
+        <div class="alert alert-success" *ngIf="successMessage()">
+          {{ successMessage() }}
+        </div>
+        <div class="alert alert-danger" *ngIf="errorMessage()">
+          {{ errorMessage() }}
+        </div>
+
+        <form (ngSubmit)="updateProfile()">
+          <div class="form-field">
+            <label for="username">Nombre de Usuario</label>
+            <input id="username" type="text" [(ngModel)]="formUsuario" name="username" required />
+          </div>
+
+          <div class="form-field">
+            <label for="phone">Teléfono de contacto</label>
+            <input id="phone" type="text" [(ngModel)]="formTelefono" name="phone" required />
+          </div>
+
+          <div class="form-field">
+            <label for="email">Correo Electrónico</label>
+            <input id="email" type="email" [(ngModel)]="formEmail" name="email" required />
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full">Guardar Cambios</button>
+        </form>
+      </div>
+
+      <!-- Cambio de Contraseña -->
+      <div class="card">
+        <h2>Cambiar Contraseña</h2>
+
+        <div class="alert alert-success" *ngIf="successPasswordMessage()">
+          {{ successPasswordMessage() }}
+        </div>
+        <div class="alert alert-danger" *ngIf="errorPasswordMessage()">
+          {{ errorPasswordMessage() }}
+        </div>
+
+        <form (ngSubmit)="updatePassword()">
+          <div class="form-field">
+            <label for="currentPwd">Contraseña Actual</label>
+            <input id="currentPwd" type="password" [(ngModel)]="contrasenaActual" name="currentPwd" required />
+          </div>
+
+          <div class="form-field">
+            <label for="newPwd">Nueva Contraseña</label>
+            <input id="newPwd" type="password" [(ngModel)]="contrasenaNueva" name="newPwd" required />
+            <small class="help-text">Mínimo 8 caracteres, 1 mayúscula, 1 número y 1 símbolo.</small>
+          </div>
+
+          <div class="form-field">
+            <label for="confirmPwd">Confirmar Nueva Contraseña</label>
+            <input id="confirmPwd" type="password" [(ngModel)]="contrasenaNuevaConfirm" name="confirmPwd" required />
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full">Actualizar Contraseña</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

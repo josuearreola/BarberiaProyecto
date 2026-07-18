@@ -1,0 +1,235 @@
+<section class="admin-shell">
+  <header class="topbar">
+    <div class="topbar-info">
+      <p class="eyebrow">Panel Administrativo</p>
+      <h1>Gestión de Usuarios</h1>
+      <p class="subtitle">Alta, edición, eliminación lógica y control de acceso de usuarios del sistema.</p>
+    </div>
+    <div class="topbar-actions">
+      <button class="action-btn" type="button" (click)="openCreateModal()">+ Nuevo Usuario</button>
+    </div>
+  </header>
+
+  <!-- Alertas -->
+  @if (successMessage()) {
+    <div class="message success">{{ successMessage() }}</div>
+  }
+  @if (errorMessage() && !showFormModal() && !showPasswordModal()) {
+    <div class="message error">{{ errorMessage() }}</div>
+  }
+
+  <!-- Panel principal -->
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Directorio de Usuarios</h2>
+      <div class="panel-head-actions">
+        <button class="ghost-btn" type="button" (click)="clearFilters()">Limpiar</button>
+        <button class="action-btn" type="button" (click)="applyFilters()">Aplicar filtros</button>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-grid">
+      <label>
+        Buscar
+        <input 
+          type="text" 
+          [ngModel]="search()" 
+          (ngModelChange)="search.set($event)"
+          (input)="applyFilters()" 
+          placeholder="Nombre, email o teléfono..." 
+        />
+      </label>
+
+      <label>
+        Rol
+        <select [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event)" (change)="applyFilters()">
+          <option value="">Todos los roles</option>
+          <option value="admin">Administrador</option>
+          <option value="cliente">Cliente</option>
+        </select>
+      </label>
+
+      <label>
+        Estado
+        <select [ngModel]="estadoFilter()" (ngModelChange)="estadoFilter.set($event)" (change)="applyFilters()">
+          <option value="">Todos los estados</option>
+          <option value="activo">Activo</option>
+          <option value="inactivo">Inactivo</option>
+        </select>
+      </label>
+    </div>
+
+    <!-- Tabla de usuarios -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading()) {
+            <tr class="loading-row">
+              <td colspan="6">
+                <div class="spinner"></div>
+                <span class="loading-text">Cargando usuarios...</span>
+              </td>
+            </tr>
+          } @else {
+            @for (u of users(); track u.id) {
+              <tr>
+                <td class="font-bold">{{ u.usuario }}</td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.telefono }}</td>
+                <td>
+                  <span class="role-pill" [ngClass]="u.role">
+                    {{ u.role === 'admin' ? '👑 Admin' : '👤 Cliente' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="status-pill" [ngClass]="u.estado">
+                    {{ u.estado === 'activo' ? '● Activo' : '○ Inactivo' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="row-actions">
+                    <button class="ghost-btn" type="button" (click)="openEditModal(u)">Editar</button>
+                    <button class="ghost-btn" type="button" (click)="openPasswordModal(u)">🔒 Clave</button>
+                    <button
+                      [class]="u.estado === 'activo' ? 'danger-btn' : 'success-btn'"
+                      type="button"
+                      (click)="toggleUserStatus(u)"
+                    >
+                      {{ u.estado === 'activo' ? 'Desactivar' : 'Activar' }}
+                    </button>
+                    <button class="danger-btn" type="button" (click)="deleteUser(u)">🗑️ Borrar</button>
+                  </div>
+                </td>
+              </tr>
+            }
+            @if (users().length === 0) {
+              <tr>
+                <td colspan="6" class="text-center">No se encontraron usuarios.</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    @if (totalPages > 1) {
+      <div class="pager">
+        <span>Total: {{ totalUsers() }} usuarios</span>
+        <div class="pager-actions">
+          <button class="ghost-btn" type="button" [disabled]="page() === 1" (click)="changePage(-1)">Anterior</button>
+          <span>Página {{ page() }} de {{ totalPages }}</span>
+          <button class="ghost-btn" type="button" [disabled]="page() === totalPages" (click)="changePage(1)">Siguiente</button>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- MODAL: Crear/Editar Usuario -->
+  @if (showFormModal()) {
+    <div class="modal-overlay">
+      <button class="modal-backdrop" type="button" aria-label="Cerrar modal" (click)="closeModals()"></button>
+      <div class="modal-card">
+        <div class="panel-head">
+          <h3>{{ isEditing() ? 'Editar Usuario' : 'Nuevo Usuario' }}</h3>
+          <button class="ghost-btn" type="button" (click)="closeModals()">Cerrar</button>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="message error">{{ errorMessage() }}</div>
+        }
+
+        <form (ngSubmit)="saveUser()" #userForm="ngForm">
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Nombre de Usuario</label>
+              <input type="text" [(ngModel)]="formUsuario" name="usuario" required placeholder="ej. Juan Pérez" />
+            </div>
+
+            <div class="form-field">
+              <label>Teléfono</label>
+              <input type="text" [(ngModel)]="formTelefono" name="telefono" required placeholder="+52 442 123 4567" />
+            </div>
+
+            <div class="form-field full-width">
+              <label>Email</label>
+              <input type="email" [(ngModel)]="formEmail" name="email" required placeholder="usuario@email.com" />
+            </div>
+
+            @if (!isEditing()) {
+              <div class="form-field full-width">
+                <label>Contraseña</label>
+                <input type="password" [(ngModel)]="formPassword" name="password" required placeholder="Contraseña segura" />
+                <small class="help-text">Mínimo 8 caracteres, 1 mayúscula, 1 número, 1 símbolo.</small>
+              </div>
+            }
+
+            <div class="form-field">
+              <label>Rol</label>
+              <select [(ngModel)]="formRole" name="role">
+                <option value="admin">Administrador</option>
+                <option value="cliente">Cliente</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label>Estado</label>
+              <select [(ngModel)]="formEstado" name="estado">
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="ghost-btn" (click)="closeModals()">Cancelar</button>
+            <button type="submit" class="action-btn" [disabled]="!userForm.form.valid">
+              {{ isEditing() ? 'Guardar Cambios' : 'Crear Usuario' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL: Cambiar Contraseña -->
+  @if (showPasswordModal()) {
+    <div class="modal-overlay">
+      <button class="modal-backdrop" type="button" aria-label="Cerrar modal" (click)="closeModals()"></button>
+      <div class="modal-card">
+        <div class="panel-head">
+          <h3>Cambiar Contraseña</h3>
+          <button class="ghost-btn" type="button" (click)="closeModals()">Cerrar</button>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="message error">{{ errorMessage() }}</div>
+        }
+
+        <form (ngSubmit)="updatePassword()">
+          <div class="form-field">
+            <label>Nueva Contraseña</label>
+            <input type="password" [(ngModel)]="newPassword" name="newPassword" required placeholder="Nueva contraseña segura" />
+            <small class="help-text">Debe cumplir con las políticas de seguridad del sistema.</small>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="ghost-btn" (click)="closeModals()">Cancelar</button>
+            <button type="submit" class="action-btn" [disabled]="!newPassword">Actualizar Contraseña</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</section>

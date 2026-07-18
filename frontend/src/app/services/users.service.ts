@@ -97,6 +97,32 @@ export class UsersService {
     return this.withTimeout(this.http.delete<void>(`${this.apiUrl}/${userId}`));
   }
 
+  changePassword(userId: number, contrasena: string): Observable<any> {
+    return this.withTimeout(this.http.post<any>(`${this.apiUrl}/${userId}/change-password`, { contrasena }));
+  }
+
+  getPermissionsMap(): Observable<any> {
+    return this.withTimeout(this.http.get<any>(`${this.apiUrl}/roles/permissions`));
+  }
+
+  addPermission(role: string, permission: string): Observable<any> {
+    return this.withTimeout(this.http.post<any>(`${this.apiUrl}/roles/permissions`, { role, permission }));
+  }
+
+  removePermission(role: string, permission: string): Observable<any> {
+    return this.withTimeout(this.http.delete<any>(`${this.apiUrl}/roles/permissions`, {
+      params: new HttpParams().set('role', role).set('permission', permission)
+    }));
+  }
+
+  getAuditLogs(page = 1, limit = 50, search = ''): Observable<any> {
+    let params = new HttpParams().set('page', String(page)).set('limit', String(limit));
+    if (search) {
+      params = params.set('search', search);
+    }
+    return this.withTimeout(this.http.get<any>(`${this.apiUrl}/audit-logs/history`, { params }));
+  }
+
   private withTimeout<T>(observable: Observable<T>): Observable<T> {
     return observable.pipe(timeout(this.requestTimeoutMs));
   }

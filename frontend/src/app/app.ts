@@ -5,20 +5,25 @@ import { isPlatformBrowser } from '@angular/common';
 import { Header } from './components/header/header';
 import { Footer } from './components/footer/footer';
 import { AuthService } from './services/auth.service';
+import { UserProfile } from './pages/user-profile/user-profile';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header, Footer],
+  imports: [RouterOutlet, Header, Footer, UserProfile],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
   protected readonly title = signal('frontend');
   protected readonly showChrome = signal(true);
+
+  get isProfileModalOpen() {
+    return this.authService.isProfileModalOpen;
+  }
   private readonly platformId = inject(PLATFORM_ID);
   private readonly authSyncStorageKey = 'barberia.auth.sync';
 
-  constructor(private readonly authService: AuthService, private readonly router: Router) {
+  constructor(protected readonly authService: AuthService, private readonly router: Router) {
     if (isPlatformBrowser(this.platformId)) {
       this.authService.loadSession().subscribe();
       globalThis.addEventListener('focus', this.handleWindowFocus);

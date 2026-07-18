@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
+import { AuditLogService } from '../users/audit-log.service';
 import { RegisterDto } from './dto/register.dto';
 import { User, UserRole, UserStatus } from '../users/entities/user.entity';
 import { MailService } from './mail.service';
@@ -40,6 +41,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
     private readonly securitySessionsService: SecuritySessionsService,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
   async requestRegistration(dto: RegisterDto) {
@@ -131,16 +133,54 @@ export class AuthService {
   }
 
   async validateUser(email: string, password: string) {
-    const user = await this.usersService.validatePassword(email, password);
+    const user = await this.usersService.findByEmailWithPassword(email);
     if (!user) {
       throw new UnauthorizedException('Credenciales invalidas');
+    }
+
+    if (user.lockoutUntil && new Date(user.lockoutUntil) > new Date()) {
+      const remainingTime = Math.ceil(
+        (new Date(user.lockoutUntil).getTime() - new Date().getTime()) / 60000,
+      );
+      throw new UnauthorizedException(
+        `Cuenta bloqueada temporalmente por seguridad. Intente de nuevo en ${remainingTime} minutos.`,
+      );
     }
 
     if (user.estado !== UserStatus.Activo) {
       throw new UnauthorizedException('Usuario inactivo. Contacta al administrador.');
     }
 
-    return user;
+    const matches = await bcrypt.compare(password, user.passwordHash);
+    if (!matches) {
+      const attempts = (user.failedAttempts || 0) + 1;
+      if (attempts >= 5) {
+        const lockoutUntil = new Date(Date.now() + 15 * 60 * 1000);
+        await this.usersService.update(user.id, {
+          failedAttempts: 0,
+          lockoutUntil,
+        } as any);
+        throw new UnauthorizedException(
+          'Demasiados intentos fallidos. Su cuenta ha sido bloqueada por 15 minutos.',
+        );
+      } else {
+        await this.usersService.update(user.id, {
+          failedAttempts: attempts,
+        } as any);
+        throw new UnauthorizedException(
+          `Credenciales invalidas. Intento ${attempts} de 5.`,
+        );
+      }
+    }
+
+    if (user.failedAttempts > 0 || user.lockoutUntil) {
+      await this.usersService.update(user.id, {
+        failedAttempts: 0,
+        lockoutUntil: null,
+      } as any);
+    }
+
+    return this.usersService.sanitize(user);
   }
 
   async notifyLogin(user: User, req: Request): Promise<void> {

@@ -57,10 +57,24 @@
       
       <div class="auth-buttons">
         @if (user$ | async; as user) {
-        <button class="auth-btn ghost" type="button" (click)="onLogout(user)">Cerrar Sesión</button>
+          @if (user.role === 'admin') {
+            <div class="dropdown" (mouseenter)="showAdminMenu = true" (mouseleave)="showAdminMenu = false">
+              <a class="auth-btn ghost" style="cursor: pointer;">Admin ▼</a>
+              @if (showAdminMenu) {
+                <div class="dropdown-menu">
+                  <a routerLink="/admin/citas" class="dropdown-item">Citas</a>
+                  <a routerLink="/admin/usuarios" class="dropdown-item">Usuarios</a>
+                  <a routerLink="/admin/roles" class="dropdown-item">Roles/Permisos</a>
+                  <a routerLink="/admin/auditoria" class="dropdown-item">Auditoría</a>
+                </div>
+              }
+            </div>
+          }
+          <button class="auth-btn ghost" type="button" (click)="openProfile()">Mi Perfil</button>
+          <button class="auth-btn ghost" type="button" (click)="onLogout(user)">Cerrar Sesión</button>
         } @else {
-        <a routerLink="/login" class="auth-btn ghost">Iniciar Sesión</a>
-        <a routerLink="/registro" class="auth-btn primary">Registrarse</a>
+          <a routerLink="/login" class="auth-btn ghost">Iniciar Sesión</a>
+          <a routerLink="/registro" class="auth-btn primary">Registrarse</a>
         }
       </div>
 

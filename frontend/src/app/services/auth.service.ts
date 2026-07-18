@@ -1,4 +1,4 @@
-import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, of, shareReplay, tap } from 'rxjs';
@@ -27,6 +27,8 @@ export interface RegisterRequestResponse {
   providedIn: 'root'
 })
 export class AuthService {
+  isProfileModalOpen = signal(false);
+
   private readonly apiUrl = `${environment.apiUrl}/auth`;
   private readonly platformId = inject(PLATFORM_ID);
   private readonly userSubject = new BehaviorSubject<User | null>(null);
@@ -103,6 +105,21 @@ export class AuthService {
         this.userSubject.next(null);
         this.hasResolvedSession = true;
       })
+    );
+  }
+
+  updateOwnProfile(payload: any): Observable<User> {
+    return this.http.patch<User>(`${this.apiUrl}/profile`, payload).pipe(
+      timeout(this.requestTimeoutMs),
+      tap((user) => {
+        this.userSubject.next(user);
+      })
+    );
+  }
+
+  changeOwnPassword(contrasenaActual: string, contrasenaNueva: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/change-password`, { contrasenaActual, contrasenaNueva }).pipe(
+      timeout(this.requestTimeoutMs)
     );
   }
 }

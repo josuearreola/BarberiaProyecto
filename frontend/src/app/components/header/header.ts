@@ -18,6 +18,7 @@ export class Header {
 
   // NUEVO
   showServicesMenu = false;
+  showAdminMenu = false;
 
   readonly user$: Observable<User | null>;
   private readonly platformId = inject(PLATFORM_ID);
@@ -31,6 +32,10 @@ export class Header {
 
   goToHome(): void {
     this.router.navigate(['/']);
+  }
+
+  openProfile(): void {
+    this.authService.isProfileModalOpen.set(true);
   }
 
   private readonly searchableSections = [

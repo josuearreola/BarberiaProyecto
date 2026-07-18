@@ -5,8 +5,11 @@
       <h1>Gestion de Barberia</h1>
       <p class="subtitle">Controla usuarios registrados y citas reservadas desde un solo lugar.</p>
     </div>
-    <button class="logout-btn" type="button" (click)="onLogout()">Cerrar sesion</button>
-    </header>
+    <div class="topbar-actions">
+      <button class="ghost-btn" type="button" (click)="openProfileModal()">Mi Perfil</button>
+      <button class="logout-btn" type="button" (click)="onLogout()">Cerrar sesion</button>
+    </div>
+  </header>
 
   <div class="tabs">
     <button type="button" class="tab" [class.active]="activeTab() === 'appointments'" (click)="setTab('appointments')">
@@ -14,6 +17,12 @@
     </button>
     <button type="button" class="tab" [class.active]="activeTab() === 'users'" (click)="setTab('users')">
       Usuarios
+    </button>
+    <button type="button" class="tab" [class.active]="activeTab() === 'roles'" (click)="setTab('roles')">
+      Roles y Permisos
+    </button>
+    <button type="button" class="tab" [class.active]="activeTab() === 'audit'" (click)="setTab('audit')">
+      Auditoría
     </button>
   </div>
 
@@ -24,6 +33,9 @@
     <div class="message success">{{ successMessage }}</div>
   }
 
+  <!-- ═══════════════════════════════════════════
+       TAB: CITAS
+       ═══════════════════════════════════════════ -->
   @if (activeTab() === 'appointments') {
   <section class="panel">
     <div class="panel-head">
@@ -85,360 +97,177 @@
       <button class="action-btn" type="button" [disabled]="isLoading" (click)="applyFilters()">Aplicar filtros</button>
     </div>
 
-      <div class="table-wrapper">
-        <table>
-          <thead>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Servicio</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading) {
+          <tr>
+            <td class="loading" colspan="6">Cargando citas...</td>
+          </tr>
+          } @else {
+            @for (appointment of appointments; track appointment.id) {
             <tr>
-              <th>Cliente</th>
-              <th>Servicio</th>
-              <th>Fecha</th>
-              <th>Hora</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            @if (isLoading) {
-            <tr>
-                <td class="loading" colspan="6">Cargando citas...</td>
-                </tr>
-                } @else {
-                @for (appointment of appointments; track appointment.id) {
-                <tr>
-                  <td>
-                    <div class="cell-stack">
-                      <strong>{{ appointment.nombreCompleto }}</strong>
-                      <span>{{ appointment.telefono }}</span>
-                    </div>
-                    </td>
-                    <td>{{ appointment.servicio }}</td>
-                    <td>{{ appointment.fechaCita }}</td>
-                    <td>{{ appointment.horaCita }}</td>
-                  <td><span class="status-pill">{{ appointment.estado }}</span></td>
-                  <td class="row-actions">
-                    <button class="ghost-btn" type="button" [disabled]="isAppointmentPending(appointment.id)"
-                      (click)="startEdit(appointment)">Editar</button>
-                    <button class="danger-btn" type="button" [disabled]="isAppointmentPending(appointment.id)"
-                      (click)="openDeleteAppointment(appointment)">Eliminar</button>
-                    </td>
-                    </tr>
-                    }
-
-              @if (!appointments.length) {
-              <tr>
-                  <td class="loading" colspan="6">No hay citas para esos filtros.</td>
-                  </tr>
-                  }
-                  }
-                  </tbody>
-                  </table>
-                  </div>
-
-      <div class="pager">
-        <span>Total: {{ totalAppointments }}</span>
-        <div class="pager-actions">
-          <button class="ghost-btn" type="button" [disabled]="isLoading || (appointmentFilters.page ?? 1) <= 1"
-            (click)="changeAppointmentPage((appointmentFilters.page ?? 1) - 1)">Anterior</button>
-          <span>Pagina {{ appointmentFilters.page }} / {{ appointmentTotalPages }}</span>
-          <button class="ghost-btn" type="button"
-            [disabled]="isLoading || (appointmentFilters.page ?? 1) >= appointmentTotalPages"
-            (click)="changeAppointmentPage((appointmentFilters.page ?? 1) + 1)">Siguiente</button>
-        </div>
-      </div>
-      </section>
-      }
-      
-      @if (activeTab() === 'users') {
-      <section class="panel">
-        <div class="panel-head">
-          <h2>CRUD de Usuarios</h2>
-          <div class="panel-head-actions">
-            <button class="ghost-btn" type="button" [disabled]="isLoadingUsers" (click)="loadUsers()">{{ isLoadingUsers ?
-              'Actualizando...' : 'Actualizar' }}</button>
-            <button class="action-btn" type="button" (click)="openCreateUserModal()">Nuevo usuario</button>
-          </div>
-        </div>
-      
-        <div class="filter-grid">
-        <label>
-          Buscar
-          <input type="text" [(ngModel)]="userFilters.search" placeholder="Usuario, telefono o email" />
-        </label>
-        <label>
-          Rol
-          <select [(ngModel)]="userFilters.role">
-            <option value="">Todos</option>
-            @for (role of roleOptions; track role) {
-            <option [value]="role">{{ role }}</option>
-            }
-          </select>
-        </label>
-        <label>
-          Estado
-          <select [(ngModel)]="userFilters.estado">
-            <option value="">Todos</option>
-            @for (status of userStatusOptions; track status) {
-            <option [value]="status">{{ status }}</option>
-            }
-          </select>
-        </label>
-        <label>
-          Ordenar por
-          <select [(ngModel)]="userFilters.sortBy">
-            <option value="creadoEn">Creado</option>
-            <option value="usuario">Usuario</option>
-            <option value="email">Email</option>
-            <option value="role">Rol</option>
-            <option value="estado">Estado</option>
-          </select>
-        </label>
-        <label>
-          Direccion
-          <select [(ngModel)]="userFilters.sortDir">
-            <option value="DESC">Descendente</option>
-            <option value="ASC">Ascendente</option>
-          </select>
-        </label>
-        <label>
-          Por pagina
-          <select [(ngModel)]="userFilters.limit">
-            <option [ngValue]="5">5</option>
-            <option [ngValue]="10">10</option>
-            <option [ngValue]="20">20</option>
-          </select>
-        </label>
-      </div>
-      
-      <div class="actions-row">
-        <button class="ghost-btn" type="button" [disabled]="isLoadingUsers" (click)="clearUserFilters()">Limpiar</button>
-        <button class="action-btn" type="button" [disabled]="isLoadingUsers" (click)="applyUserFilters()">Aplicar
-          filtros</button>
-      </div>
-      
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Usuario</th>
-              <th>Telefono</th>
-              <th>Email</th>
-              <th>Rol</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            @if (isLoadingUsers) {
-            <tr>
-              <td class="loading" colspan="6">Cargando usuarios...</td>
-            </tr>
-            } @else {
-            @for (user of users; track user.id) {
-            <tr>
-              <td>{{ user.usuario }}</td>
-              <td>{{ user.telefono }}</td>
-              <td>{{ user.email }}</td>
-              <td>{{ user.role }}</td>
-              <td><span class="status-pill">{{ user.estado }}</span></td>
+              <td>
+                <div class="cell-stack">
+                  <strong>{{ appointment.nombreCompleto }}</strong>
+                  <span>{{ appointment.telefono }}</span>
+                </div>
+              </td>
+              <td>{{ appointment.servicio }}</td>
+              <td>{{ appointment.fechaCita }}</td>
+              <td>{{ appointment.horaCita }}</td>
+              <td><span class="status-pill">{{ appointment.estado }}</span></td>
               <td class="row-actions">
-                <button class="ghost-btn" type="button" [disabled]="isUserPending(user.id)"
-                  (click)="startUserEdit(user)">Editar</button>
-                <button [class]="user.estado === 'activo' ? 'danger-btn' : 'action-btn'" type="button"
-                  [disabled]="isUserPending(user.id)" (click)="openDeleteUser(user)">
-                  {{ user.estado === 'activo' ? 'Dar de baja' : 'Activar' }}
-                </button>
+                <button class="ghost-btn" type="button" [disabled]="isAppointmentPending(appointment.id)"
+                  (click)="startEdit(appointment)">Editar</button>
+                <button class="danger-btn" type="button" [disabled]="isAppointmentPending(appointment.id)"
+                  (click)="openDeleteAppointment(appointment)">Eliminar</button>
               </td>
             </tr>
             }
-      
-            @if (!users.length) {
+
+            @if (!appointments.length) {
             <tr>
-              <td class="loading" colspan="6">No hay usuarios para esos filtros.</td>
+              <td class="loading" colspan="6">No hay citas para esos filtros.</td>
             </tr>
             }
-            }
-          </tbody>
-        </table>
-      </div>
-      
-      <div class="pager">
-        <span>Total: {{ totalUsers }}</span>
-        <div class="pager-actions">
-          <button class="ghost-btn" type="button" [disabled]="isLoadingUsers || userFilters.page <= 1"
-            (click)="changeUserPage(userFilters.page - 1)">Anterior</button>
-          <span>Pagina {{ userFilters.page }} / {{ usersTotalPages }}</span>
-          <button class="ghost-btn" type="button" [disabled]="isLoadingUsers || userFilters.page >= usersTotalPages"
-            (click)="changeUserPage(userFilters.page + 1)">Siguiente</button>
-        </div>
-      </div>
-      </section>
-      }
-      
-      @if (editId) {
-      <div class="modal-overlay">
-        <button class="modal-backdrop" type="button" aria-label="Cerrar modal" (click)="cancelEdit()"></button>
-        <div class="modal-card">
-          <div class="panel-head">
-            <h3>Editar cita</h3>
-            <button class="ghost-btn" type="button" (click)="cancelEdit()">Cerrar</button>
-          </div>
-          <div class="form-grid">
-            <input type="text" [(ngModel)]="editForm.nombreCompleto" name="editNombre" placeholder="Nombre" />
-            <input type="text" [(ngModel)]="editForm.telefono" name="editTelefono" placeholder="Telefono" />
-            <input type="email" [(ngModel)]="editForm.correo" name="editCorreo" placeholder="Correo" />
-            <input type="text" [(ngModel)]="editForm.servicio" name="editServicio" placeholder="Servicio" />
-            <input type="date" [(ngModel)]="editForm.fechaCita" name="editFecha" />
-            <input type="text" [(ngModel)]="editForm.horaCita" name="editHora" placeholder="Hora" />
-            <select [(ngModel)]="editForm.estado" name="editEstado">
-              @for (status of appointmentStatusOptions; track status) {
-              <option [value]="status">{{ status }}</option>
-            }
-          </select>
-          <textarea class="wide" rows="2" [(ngModel)]="editForm.notas" name="editNotas" placeholder="Notas"></textarea>
-          </div>
-          <div class="actions-row">
-            <button class="ghost-btn" type="button" [disabled]="isSavingAppointment" (click)="cancelEdit()">Cancelar</button>
-            <button class="action-btn" type="button" [disabled]="isSavingAppointment || !canSaveAppointmentEdit"
-              (click)="saveEdit()">{{ isSavingAppointment ? 'Guardando...' : 'Guardar cambios' }}</button>
-          </div>
-          </div>
-          </div>
           }
-          
-          @if (isCreateAppointmentModalOpen) {
-          <div class="modal-overlay">
-            <button class="modal-backdrop" type="button" aria-label="Cerrar modal"
-              (click)="closeCreateAppointmentModal()"></button>
-            <div class="modal-card">
-              <div class="panel-head">
-                <h3>Nueva cita</h3>
-                <button class="ghost-btn" type="button" [disabled]="isSubmittingAppointment"
-                  (click)="closeCreateAppointmentModal()">Cerrar</button>
-              </div>
-              <form (ngSubmit)="createAppointment()">
-                <div class="form-grid">
-                  <input type="text" [(ngModel)]="createAppointmentForm.nombreCompleto" name="createAppointmentNombre"
-                    placeholder="Nombre completo" required />
-                  <input type="text" [(ngModel)]="createAppointmentForm.telefono" name="createAppointmentTelefono"
-                    placeholder="Telefono" required />
-                  <input type="email" [(ngModel)]="createAppointmentForm.correo" name="createAppointmentCorreo"
-                    placeholder="Correo (opcional)" />
-                  <input type="text" [(ngModel)]="createAppointmentForm.servicio" name="createAppointmentServicio"
-                    placeholder="Servicio" required />
-                  <input type="date" [(ngModel)]="createAppointmentForm.fechaCita" name="createAppointmentFecha" required />
-                  <input type="text" [(ngModel)]="createAppointmentForm.horaCita" name="createAppointmentHora"
-                    placeholder="Hora (ej: 15:30)" required />
-                  <textarea class="wide" rows="2" [(ngModel)]="createAppointmentForm.notas" name="createAppointmentNotas"
-                    placeholder="Notas"></textarea>
-                </div>
-                <div class="actions-row">
-                  <button class="ghost-btn" type="button" [disabled]="isSubmittingAppointment"
-                    (click)="closeCreateAppointmentModal()">Cancelar</button>
-                  <button class="action-btn" type="submit" [disabled]="isSubmittingAppointment || !canSubmitAppointment">{{
-                    isSubmittingAppointment ? 'Creando...' : 'Crear cita' }}</button>
-                </div>
-              </form>
-            </div>
-          </div>
-          }
-          
-          @if (isCreateUserModalOpen) {
-          <div class="modal-overlay">
-            <button class="modal-backdrop" type="button" aria-label="Cerrar modal" (click)="closeCreateUserModal()"></button>
-            <div class="modal-card">
-              <div class="panel-head">
-                <h3>Nuevo usuario</h3>
-                <button class="ghost-btn" type="button" [disabled]="isSubmittingUser"
-                  (click)="closeCreateUserModal()">Cerrar</button>
-              </div>
-              <form (ngSubmit)="createUser()">
-                <div class="form-grid">
-                  <input type="text" [(ngModel)]="createUserForm.usuario" name="createUserUsuario" placeholder="Usuario"
-                    required />
-                  <input type="text" [(ngModel)]="createUserForm.telefono" name="createUserTelefono" placeholder="Telefono"
-                    required />
-                  <input type="email" [(ngModel)]="createUserForm.email" name="createUserEmail" placeholder="Email" required />
-                  <input type="password" [(ngModel)]="createUserForm.password" name="createUserPassword" placeholder="Contrasena"
-                    required minlength="6" />
-                  <select [(ngModel)]="createUserForm.role" name="createUserRole">
-                    @for (role of roleOptions; track role) {
-                    <option [value]="role">{{ role }}</option>
-                    }
-                  </select>
-                  <select [(ngModel)]="createUserForm.estado" name="createUserEstado">
-                    @for (status of userStatusOptions; track status) {
-                    <option [value]="status">{{ status }}</option>
-                    }
-                  </select>
-                </div>
-                <div class="actions-row">
-                  <button class="ghost-btn" type="button" [disabled]="isSubmittingUser"
-                    (click)="closeCreateUserModal()">Cancelar</button>
-                  <button class="action-btn" type="submit" [disabled]="isSubmittingUser || !canSubmitUser">{{ isSubmittingUser ?
-                    'Creando...' : 'Crear usuario' }}</button>
-                </div>
-              </form>
-            </div>
-          </div>
-          }
-          
-          @if (editUserId) {
-          <div class="modal-overlay">
-            <button class="modal-backdrop" type="button" aria-label="Cerrar modal" (click)="cancelUserEdit()"></button>
-            <div class="modal-card">
-              <div class="panel-head">
-                <h3>Editar usuario</h3>
-                <button class="ghost-btn" type="button" (click)="cancelUserEdit()">Cerrar</button>
-              </div>
-              <div class="form-grid">
-                <input type="text" [(ngModel)]="userEditForm.usuario" name="editUserUsuario" placeholder="Usuario" />
-                <input type="text" [(ngModel)]="userEditForm.telefono" name="editUserTelefono" placeholder="Telefono" />
-                <input type="email" [(ngModel)]="userEditForm.email" name="editUserEmail" placeholder="Email" />
-                <select [(ngModel)]="userEditForm.role" name="editUserRole">
-                  @for (role of roleOptions; track role) {
-                  <option [value]="role">{{ role }}</option>
-                  }
-                </select>
-                <select [(ngModel)]="userEditForm.estado" name="editUserEstado">
-                  @for (status of userStatusOptions; track status) {
-                  <option [value]="status">{{ status }}</option>
-                  }
-                </select>
-              </div>
-              <div class="actions-row">
-                <button class="ghost-btn" type="button" [disabled]="isSavingUser" (click)="cancelUserEdit()">Cancelar</button>
-                <button class="action-btn" type="button" [disabled]="isSavingUser || !canSaveUserEdit" (click)="saveUserEdit()">{{
-                  isSavingUser ? 'Guardando...' : 'Guardar cambios' }}</button>
-              </div>
-            </div>
-          </div>
-          }
-          
-          @if (deleteTarget) {
-          <div class="modal-overlay">
-            <button class="modal-backdrop" type="button" aria-label="Cerrar modal" (click)="cancelDelete()"></button>
-            <div class="modal-card confirm-modal">
-              <h3>Confirmar eliminacion</h3>
-              <p>
-                @if (deleteTarget.kind === 'appointment') {
-                Se eliminara la cita de <strong>{{ deleteTarget.label }}</strong>.
-                } @else {
-                Se actualizara el estado del usuario: <strong>{{ deleteTarget.label }}</strong>.
-                }
-              </p>
-              <p>
-                @if (deleteTarget.kind === 'appointment') {
-                Esta accion no se puede deshacer.
-                } @else {
-                Esta accion aplica baja logica y se puede revertir activando al usuario.
-                }
-              </p>
-              <div class="actions-row">
-                <button class="ghost-btn" type="button" [disabled]="isConfirmingDelete" (click)="cancelDelete()">Cancelar</button>
-                <button class="danger-btn" type="button" [disabled]="isConfirmingDelete" (click)="confirmDelete()">{{
-                  isConfirmingDelete ? 'Procesando...' : (deleteTarget.kind === 'appointment' ? 'Si, eliminar' : 'Si, continuar') }}</button>
-              </div>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pager">
+      <span>Total: {{ totalAppointments }}</span>
+      <div class="pager-actions">
+        <button class="ghost-btn" type="button" [disabled]="isLoading || (appointmentFilters.page ?? 1) <= 1"
+          (click)="changeAppointmentPage((appointmentFilters.page ?? 1) - 1)">Anterior</button>
+        <span>Pagina {{ appointmentFilters.page }} / {{ appointmentTotalPages }}</span>
+        <button class="ghost-btn" type="button"
+          [disabled]="isLoading || (appointmentFilters.page ?? 1) >= appointmentTotalPages"
+          (click)="changeAppointmentPage((appointmentFilters.page ?? 1) + 1)">Siguiente</button>
       </div>
     </div>
+  </section>
+  }
+
+  <!-- ═══════════════════════════════════════════
+       TAB: USUARIOS (nuevo componente dedicado)
+       ═══════════════════════════════════════════ -->
+  @if (activeTab() === 'users') {
+    <section class="panel">
+      <app-admin-users-tab></app-admin-users-tab>
+    </section>
+  }
+
+  <!-- ═══════════════════════════════════════════
+       TAB: ROLES Y PERMISOS
+       ═══════════════════════════════════════════ -->
+  @if (activeTab() === 'roles') {
+    <app-admin-roles></app-admin-roles>
+  }
+
+  <!-- ═══════════════════════════════════════════
+       TAB: AUDITORÍA
+       ═══════════════════════════════════════════ -->
+  @if (activeTab() === 'audit') {
+    <app-admin-audit></app-admin-audit>
+  }
+
+  <!-- ═══════════════════════════════════════════
+       MODALS: Solo citas
+       ═══════════════════════════════════════════ -->
+
+  @if (editId) {
+  <div class="modal-overlay">
+    <button class="modal-backdrop" type="button" aria-label="Cerrar modal" (click)="cancelEdit()"></button>
+    <div class="modal-card">
+      <div class="panel-head">
+        <h3>Editar cita</h3>
+        <button class="ghost-btn" type="button" (click)="cancelEdit()">Cerrar</button>
+      </div>
+      <div class="form-grid">
+        <input type="text" [(ngModel)]="editForm.nombreCompleto" name="editNombre" placeholder="Nombre" />
+        <input type="text" [(ngModel)]="editForm.telefono" name="editTelefono" placeholder="Telefono" />
+        <input type="email" [(ngModel)]="editForm.correo" name="editCorreo" placeholder="Correo" />
+        <input type="text" [(ngModel)]="editForm.servicio" name="editServicio" placeholder="Servicio" />
+        <input type="date" [(ngModel)]="editForm.fechaCita" name="editFecha" />
+        <input type="text" [(ngModel)]="editForm.horaCita" name="editHora" placeholder="Hora" />
+        <select [(ngModel)]="editForm.estado" name="editEstado">
+          @for (status of appointmentStatusOptions; track status) {
+          <option [value]="status">{{ status }}</option>
+          }
+        </select>
+        <textarea class="wide" rows="2" [(ngModel)]="editForm.notas" name="editNotas" placeholder="Notas"></textarea>
+      </div>
+      <div class="actions-row">
+        <button class="ghost-btn" type="button" [disabled]="isSavingAppointment" (click)="cancelEdit()">Cancelar</button>
+        <button class="action-btn" type="button" [disabled]="isSavingAppointment || !canSaveAppointmentEdit"
+          (click)="saveEdit()">{{ isSavingAppointment ? 'Guardando...' : 'Guardar cambios' }}</button>
+      </div>
+    </div>
+  </div>
+  }
+
+  @if (isCreateAppointmentModalOpen) {
+  <div class="modal-overlay">
+    <button class="modal-backdrop" type="button" aria-label="Cerrar modal"
+      (click)="closeCreateAppointmentModal()"></button>
+    <div class="modal-card">
+      <div class="panel-head">
+        <h3>Nueva cita</h3>
+        <button class="ghost-btn" type="button" [disabled]="isSubmittingAppointment"
+          (click)="closeCreateAppointmentModal()">Cerrar</button>
+      </div>
+      <form (ngSubmit)="createAppointment()">
+        <div class="form-grid">
+          <input type="text" [(ngModel)]="createAppointmentForm.nombreCompleto" name="createAppointmentNombre"
+            placeholder="Nombre completo" required />
+          <input type="text" [(ngModel)]="createAppointmentForm.telefono" name="createAppointmentTelefono"
+            placeholder="Telefono" required />
+          <input type="email" [(ngModel)]="createAppointmentForm.correo" name="createAppointmentCorreo"
+            placeholder="Correo (opcional)" />
+          <input type="text" [(ngModel)]="createAppointmentForm.servicio" name="createAppointmentServicio"
+            placeholder="Servicio" required />
+          <input type="date" [(ngModel)]="createAppointmentForm.fechaCita" name="createAppointmentFecha" required />
+          <input type="text" [(ngModel)]="createAppointmentForm.horaCita" name="createAppointmentHora"
+            placeholder="Hora (ej: 15:30)" required />
+          <textarea class="wide" rows="2" [(ngModel)]="createAppointmentForm.notas" name="createAppointmentNotas"
+            placeholder="Notas"></textarea>
+        </div>
+        <div class="actions-row">
+          <button class="ghost-btn" type="button" [disabled]="isSubmittingAppointment"
+            (click)="closeCreateAppointmentModal()">Cancelar</button>
+          <button class="action-btn" type="submit" [disabled]="isSubmittingAppointment || !canSubmitAppointment">{{
+            isSubmittingAppointment ? 'Creando...' : 'Crear cita' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
+
+  @if (deleteTarget) {
+  <div class="modal-overlay">
+    <button class="modal-backdrop" type="button" aria-label="Cerrar modal" (click)="cancelDelete()"></button>
+    <div class="modal-card confirm-modal">
+      <h3>Confirmar eliminacion</h3>
+      <p>Se eliminara la cita de <strong>{{ deleteTarget.label }}</strong>.</p>
+      <p>Esta accion no se puede deshacer.</p>
+      <div class="actions-row">
+        <button class="ghost-btn" type="button" [disabled]="isConfirmingDelete" (click)="cancelDelete()">Cancelar</button>
+        <button class="danger-btn" type="button" [disabled]="isConfirmingDelete" (click)="confirmDelete()">{{
+          isConfirmingDelete ? 'Procesando...' : 'Si, eliminar' }}</button>
+      </div>
+    </div>
+  </div>
   }
 </section>

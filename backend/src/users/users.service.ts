@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User, UserRole, UserStatus } from './entities/user.entity';
+import { RolePermission } from './entities/role-permission.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 const bcryptClient = bcrypt as {
@@ -55,6 +56,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    @InjectRepository(RolePermission)
+    private readonly rolePermissionRepository: Repository<RolePermission>,
   ) {}
 
   async create(data: CreateUserData): Promise<User> {
@@ -237,7 +240,61 @@ export class UsersService {
 
   async remove(id: number): Promise<void> {
     const user = await this.findById(id);
-    await this.usersRepository.remove(user);
+    user.estado = UserStatus.Inactivo;
+    await this.usersRepository.save(user);
+  }
+
+  async updatePassword(id: number, newPassword: string): Promise<void> {
+    const user = await this.usersRepository
+      .createQueryBuilder('user')
+      .addSelect('user.passwordHash')
+      .where('user.id = :id', { id })
+      .getOne();
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    user.passwordHash = await this.hashPassword(newPassword);
+    await this.usersRepository.save(user);
+  }
+
+  async getRolePermissions(role: string): Promise<string[]> {
+    const perms = await this.rolePermissionRepository.find({
+      where: { role },
+    });
+    return perms.map((p) => p.permission);
+  }
+
+  async addRolePermission(role: string, permission: string): Promise<RolePermission> {
+    const existing = await this.rolePermissionRepository.findOne({
+      where: { role, permission },
+    });
+    if (existing) {
+      return existing;
+    }
+    const newPerm = this.rolePermissionRepository.create({ role, permission });
+    return this.rolePermissionRepository.save(newPerm);
+  }
+
+  async removeRolePermission(role: string, permission: string): Promise<void> {
+    const existing = await this.rolePermissionRepository.findOne({
+      where: { role, permission },
+    });
+    if (existing) {
+      await this.rolePermissionRepository.remove(existing);
+    }
+  }
+
+  async getAllPermissionsMap(): Promise<Record<string, string[]>> {
+    const all = await this.rolePermissionRepository.find();
+    const map: Record<string, string[]> = {};
+    for (const item of all) {
+      if (!map[item.role]) {
+        map[item.role] = [];
+      }
+      map[item.role].push(item.permission);
+    }
+    return map;
   }
 
   sanitize(user: User): User {
@@ -248,6 +305,8 @@ export class UsersService {
       email: user.email,
       role: user.role,
       estado: user.estado,
+      failedAttempts: user.failedAttempts,
+      lockoutUntil: user.lockoutUntil,
       creadoEn: user.creadoEn,
       actualizadoEn: user.actualizadoEn,
     } as User;

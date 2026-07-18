@@ -1,0 +1,331 @@
+/* ── Design tokens (matching admin-appointments) ── */
+:host {
+  --bg: #05080f;
+  --panel: #0d1426;
+  --panel-soft: #111c35;
+  --line: rgba(255, 255, 255, 0.12);
+  --text: #edf2ff;
+  --muted: #9fb0d6;
+  --accent: #f8b413;
+  --accent-hover: #e5a30f;
+  --danger: #ff6f6f;
+  --success: #4ade80;
+
+  display: block;
+}
+
+/* ── Panel ── */
+.audit-panel {
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0));
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+.panel-head h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.panel-subtitle {
+  margin: 0 0 18px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* ── Alerts ── */
+.message {
+  margin-bottom: 18px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  animation: slideDown 0.25s ease-out;
+}
+
+.message.error {
+  background: rgba(124, 23, 23, 0.6);
+  color: #fff2f2;
+  border-color: rgba(255, 111, 111, 0.25);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Filter grid ── */
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+
+.filter-grid label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+input {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--panel-soft);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(248, 180, 19, 0.12);
+}
+
+input::placeholder {
+  color: rgba(159, 176, 214, 0.5);
+}
+
+/* ── Buttons ── */
+.action-btn {
+  border-radius: 12px;
+  border: 1px solid transparent;
+  padding: 10px 16px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  background: var(--accent);
+  color: #1a1200;
+  transition: background 0.2s, transform 0.12s;
+}
+
+.action-btn:hover {
+  background: var(--accent-hover);
+}
+
+.action-btn:active {
+  transform: translateY(1px);
+}
+
+.ghost-btn {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.ghost-btn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.ghost-btn:active {
+  transform: translateY(1px);
+}
+
+.ghost-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Table ── */
+.table-wrapper {
+  margin-top: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 750px;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+th {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+td {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+tbody tr {
+  transition: background 0.15s;
+}
+
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.font-bold {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.text-center {
+  text-align: center;
+  color: var(--muted);
+  padding: 32px 16px !important;
+  font-style: italic;
+}
+
+/* ── IP column ── */
+.ip-cell {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.82rem;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* ── Action badges ── */
+.action-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.action-login {
+  background: rgba(45, 212, 191, 0.12);
+  color: #5eead4;
+  border-color: rgba(45, 212, 191, 0.2);
+}
+
+.action-logout {
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+.action-password {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.2);
+}
+
+.action-admin {
+  background: rgba(99, 149, 255, 0.12);
+  color: #93bbff;
+  border-color: rgba(99, 149, 255, 0.2);
+}
+
+/* ── ID column ── */
+.id-cell {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ── Date/Time ── */
+.date-cell {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* ── Loading ── */
+.loading-row td {
+  text-align: center;
+  padding: 48px 16px !important;
+  color: var(--muted);
+}
+
+.spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  display: block;
+  font-size: 0.85rem;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+/* ── Pagination ── */
+.pager {
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.pager-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .pager {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .panel-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}

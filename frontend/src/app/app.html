@@ -6,6 +6,11 @@
 <main class="router-content">
   <router-outlet></router-outlet>
 </main>
+
+@if (isProfileModalOpen()) {
+  <app-user-profile (close)="authService.isProfileModalOpen.set(false)"></app-user-profile>
+}
+
 @if (showChrome()) {
 <app-footer></app-footer>
 }
