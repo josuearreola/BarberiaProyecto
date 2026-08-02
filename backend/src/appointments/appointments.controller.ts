@@ -10,6 +10,7 @@ import {
   HttpStatus,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
@@ -28,6 +29,28 @@ export class AppointmentsController {
   @HttpCode(HttpStatus.CREATED)
   create(@Body() createAppointmentDto: CreateAppointmentDto) {
     return this.appointmentsService.create(createAppointmentDto);
+  }
+
+  // Ruta PÚBLICA para que la TV PWA pueda cargar citas del día sin autenticación
+  @Get('by-date/:fecha')
+  findByDatePublic(@Param('fecha') fecha: string) {
+    return this.appointmentsService.findByDate(fecha);
+  }
+
+  @Get('mis-citas')
+  @UseGuards(SessionAuthGuard, RolesGuard)
+  @Roles(UserRole.Cliente, UserRole.Admin)
+  findMyAppointments(@Req() request: any) {
+    const userId = request.session?.userId;
+    return this.appointmentsService.findClientAppointments(userId);
+  }
+
+  @Patch('mis-citas/:id/cancelar')
+  @UseGuards(SessionAuthGuard, RolesGuard)
+  @Roles(UserRole.Cliente)
+  async cancelMyAppointment(@Param('id') id: string, @Req() request: any) {
+    const userId = request.session?.userId;
+    return this.appointmentsService.cancelClientAppointment(+id, userId);
   }
 
   @Get()
@@ -71,7 +94,7 @@ export class AppointmentsController {
   @UseGuards(SessionAuthGuard, RolesGuard)
   @Roles(UserRole.Admin)
   updateStatus(@Param('id') id: string, @Body() body: UpdateStatusDto) {
-    return this.appointmentsService.updateStatus(+id, body.estado);
+    return this.appointmentsService.updateStatus(+id, body.estado, body.nombreBarbero);
   }
 
   @Patch(':id')

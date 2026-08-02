@@ -25,7 +25,11 @@ export class CsrfMiddleware implements NestMiddleware {
 
     // 3. Validar peticiones de modificación (POST, PUT, PATCH, DELETE)
     const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
-    if (!safeMethods.includes(req.method)) {
+    
+    // Bypass para aplicaciones móviles y dispositivos inteligentes
+    const isAppClient = req.headers['x-app-client'] === 'barberia-smart-device';
+
+    if (!safeMethods.includes(req.method) && !isAppClient) {
       const headerToken = req.headers['x-xsrf-token'] || req.headers['x-csrf-token'];
       const bodyToken = req.body ? req.body._csrf : null;
 

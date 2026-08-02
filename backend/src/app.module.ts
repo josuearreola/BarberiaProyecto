@@ -9,6 +9,9 @@ import { AppointmentsModule } from './appointments/appointments.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { CsrfMiddleware } from './auth/csrf.middleware';
+import { GatewayModule } from './gateway.module';
+import { ServiciosModule } from './servicios/servicios.module';
+import { PromocionesModule } from './promociones/promociones.module';
 
 @Module({
   imports: [
@@ -22,13 +25,9 @@ import { CsrfMiddleware } from './auth/csrf.middleware';
       useFactory: (configService: ConfigService) => {
         const databaseUrl = configService.get<string>('DATABASE_URL') || '';
         if (!databaseUrl) {
-          // Evitar que el backend reviente en escenarios donde solo quieres probar frontend.
-          // En cuanto configures DATABASE_URL, TypeORM conectará normalmente.
           throw new Error('DATABASE_URL no configurada');
         }
 
-
-        // Parse explícito para evitar problemas de parsing en `pg`.
         const url = new URL(databaseUrl);
         const user = decodeURIComponent(url.username);
         const password = decodeURIComponent(url.password);
@@ -47,9 +46,7 @@ import { CsrfMiddleware } from './auth/csrf.middleware';
           password,
           database,
           autoLoadEntities: true,
-          synchronize: false, // En producción siempre en false
-          // Neon normalmente requiere SSL vía sslmode=require.
-          // En local forzamos rejectUnauthorized:false para evitar errores de compatibilidad.
+          synchronize: false,
           ssl: sslMode === 'require' ? { rejectUnauthorized: false } : false,
           logging: false,
         };
@@ -61,9 +58,12 @@ import { CsrfMiddleware } from './auth/csrf.middleware';
         limit: 100,
       },
     ]),
+    GatewayModule,
     AppointmentsModule,
     UsersModule,
     AuthModule,
+    ServiciosModule,
+    PromocionesModule,
   ],
   controllers: [AppController],
   providers: [

@@ -13,7 +13,7 @@ async function bootstrap() {
   const allowedOrigins = (
     process.env.FRONTEND_URLS ||
     process.env.FRONTEND_URL ||
-    'http://localhost:4200'
+    'http://localhost:4200,http://localhost:8080'
   )
     .split(',')
     .map((origin) => origin.trim())
@@ -66,7 +66,7 @@ async function bootstrap() {
   // Prefijo global para todas las rutas
   app.setGlobalPrefix('api');
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
   console.log(
     `Servidor corriendo en http://localhost:${process.env.PORT ?? 3000}/api`,
   );

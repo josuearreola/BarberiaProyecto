@@ -1,0 +1,165 @@
+.tv-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  transition: background-image 0.5s ease-in-out;
+}
+
+.overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(18, 18, 18, 0.75); /* Oscurece el fondo multimedia */
+  z-index: 1;
+}
+
+.safe-zone {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  padding: 54px 96px; /* 5% Safe Zone exacta de la rúbrica */
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.logo {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+}
+
+.datetime {
+  text-align: right;
+  color: #F9A11B;
+}
+
+.grid-2x2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 25px;
+  flex: 1;
+  min-height: 0; /* Permite que el grid respete la altura del flex */
+}
+
+.tv-card {
+  background: rgba(35, 54, 77, 0.85); /* Azul oscuro con transparencia */
+  border-radius: 20px;
+  padding: 25px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  min-height: 0; /* Permite que el contenido interno scrollé en vez de crecer */
+}
+
+.gold-text {
+  color: #F9A11B;
+  font-weight: bold;
+}
+
+/* Listas internas */
+.turn-list, .service-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.turn-list::-webkit-scrollbar, .service-list::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+.turn-item, .service-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(197, 197, 197, 0.1); /* Gris semi-transparente */
+  padding: 10px 15px;
+  border-radius: 10px;
+}
+
+.status-badge {
+  background-color: #FB0505;
+  color: white;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.gallery-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.3);
+  border-radius: 10px;
+}
+
+/* Promociones */
+.promo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.promo-list::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+.promo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: rgba(197, 197, 197, 0.1);
+  padding: 10px 15px;
+  border-radius: 10px;
+}
+
+.promo-badge {
+  background: linear-gradient(135deg, #F9A11B, #FF6B35);
+  color: #000;
+  font-weight: bold;
+  font-size: 16px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  min-width: 50px;
+  text-align: center;
+}
+
+/* Turnos pasados */
+.past-turn {
+  opacity: 0.4;
+}
+
+.badge-past {
+  background-color: #555555;
+  color: #AAAAAA;
+}
+
+.empty-state {
+  padding: 20px;
+  text-align: center;
+}

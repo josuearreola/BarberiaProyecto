@@ -1,0 +1,38 @@
+/* You can add global styles to this file, and also import other style files */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #121212;
+  color: #FFFFFF;
+  margin: 0;
+  padding: 0;
+}
+
+app-root {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Tipografías base de la rúbrica */
+h1 { font-size: 80px; font-weight: bold; }
+h2 { font-size: 40px; font-weight: 600; }
+.card-title { font-size: 32px; font-weight: 600; color: #FFFFFF; }
+.text-main { font-size: 32px; font-weight: 400; } /* etiqueta secundaria >= 2rem */
+.text-secondary { font-size: 24px; color: #C5C5C5; } /* detalle >= 1.5rem */
+
+/* D-Pad Focus: Foco visible D-pad con glow dorado */
+.focused-card {
+  box-shadow: 0 0 30px 10px #F9A11B !important;
+  border: 4px solid #F9A11B !important;
+  transform: scale(1.02);
+  transition: all 0.2s ease-in-out;
+}

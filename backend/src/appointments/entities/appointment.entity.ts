@@ -36,6 +36,9 @@ export class Appointment {
   @Column({ name: 'notas', type: 'text', nullable: true })
   notas: string;
 
+  @Column({ name: 'nombre_barbero', length: 100, nullable: true })
+  nombreBarbero: string;
+
   @CreateDateColumn({ name: 'creado_en' })
   creadoEn: Date;
 

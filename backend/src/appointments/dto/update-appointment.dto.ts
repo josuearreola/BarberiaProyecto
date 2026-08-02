@@ -33,4 +33,8 @@ export class UpdateAppointmentDto {
   @IsIn(Object.values(AppointmentStatus))
   @IsOptional()
   estado?: AppointmentStatus;
+
+  @IsString()
+  @IsOptional()
+  nombreBarbero?: string;
 }

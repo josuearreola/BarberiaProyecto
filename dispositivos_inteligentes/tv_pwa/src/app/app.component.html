@@ -1,0 +1,83 @@
+<!-- Contenedor Base Fijo de 1920x1080 (Safe Zone en su interior) -->
+<div class="tv-container" [style.backgroundImage]="'url(' + backgroundMedia + ')'">
+  <div class="overlay"></div>
+
+  <!-- Safe Zone 5% -->
+  <div class="safe-zone">
+    
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <img src="logo.png" alt="Logo" class="logo" />
+      </div>
+      <div class="datetime">
+        <h2>{{ currentTime | date:'EEEE, d MMMM' }}</h2>
+        <h1>{{ currentTime | date:'HH:mm:ss' }}</h1>
+      </div>
+    </header>
+
+    <!-- Grid 2x2 -->
+    <main class="grid-2x2">
+      
+      <!-- Tarjeta 0: Turnos -->
+      <div class="tv-card" [ngClass]="{'focused-card': focusedIndex === 0}">
+        <h2 class="card-title">Turnos en Espera</h2>
+        <div class="turn-list">
+          <div class="turn-item" *ngFor="let turn of turns" [ngClass]="{'past-turn': turn.isPast}">
+            <span class="text-main">#{{ turn.id }}</span>
+            <span class="text-secondary">{{ turn.client }}</span>
+            <span class="status-badge" [ngClass]="{'badge-past': turn.isPast}">{{ turn.isPast ? 'pasada' : turn.status }}</span>
+            <span class="text-main">{{ turn.date }} {{ turn.time }}</span>
+          </div>
+          <div *ngIf="turns.length === 0" class="empty-state text-secondary">
+            No hay turnos pendientes
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta 1: Servicios (datos de la API) -->
+      <div class="tv-card" [ngClass]="{'focused-card': focusedIndex === 1}">
+        <h2 class="card-title">Nuestros Servicios</h2>
+        <div class="service-list">
+          <div class="service-item" *ngFor="let servicio of servicios">
+            <div>
+              <span class="text-main">{{ servicio.nombre }}</span>
+              <span class="text-secondary" style="font-size: 14px; display: block;">{{ servicio.duracionMinutos }} min</span>
+            </div>
+            <span class="text-main gold-text">${{ servicio.precio }}</span>
+          </div>
+          <div *ngIf="servicios.length === 0" class="empty-state text-secondary">
+            Cargando servicios...
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta 2: Promociones (datos de la API) -->
+      <div class="tv-card" [ngClass]="{'focused-card': focusedIndex === 2}">
+        <h2 class="card-title">Promociones Activas</h2>
+        <div class="promo-list">
+          <div class="promo-item" *ngFor="let promo of promociones">
+            <div>
+              <span class="text-main gold-text">{{ promo.titulo }}</span>
+              <p class="text-secondary" style="margin: 4px 0 0; font-size: 14px;">{{ promo.descripcion }}</p>
+            </div>
+            <span class="promo-badge" *ngIf="promo.descuento">{{ promo.descuento }}</span>
+          </div>
+          <div *ngIf="promociones.length === 0" class="empty-state text-secondary">
+            Cargando promociones...
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta 3: Galería -->
+      <div class="tv-card" [ngClass]="{'focused-card': focusedIndex === 3}">
+        <h2 class="card-title">Galería de Estilos</h2>
+        <div class="gallery-placeholder text-secondary">
+          <p>[Imágenes Rotativas]</p>
+          <p>Presiona ENTER para cambiar el fondo</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>

@@ -129,25 +129,3 @@ Ver `.env.example` para más detalles.
 
 Para documentación detallada sobre la configuración del sistema, consulta:
 - [CONFIGURACION_SISTEMA.md](./CONFIGURACION_SISTEMA.md)
-
-## Contribuir
-
-Las contribuciones son bienvenidas. Por favor:
-1. Haz fork del proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add: Amazing Feature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-Este proyecto es privado.
-
-## 👤 Autor
-
-**Josué Arreola**
-- GitHub: [@josuearreola](https://github.com/josuearreola)
-
-## ⭐ Soporte
-
-Si te gusta este proyecto, dale una ⭐ en GitHub!

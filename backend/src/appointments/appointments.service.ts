@@ -8,6 +8,9 @@ import { Repository, Not } from 'typeorm';
 import { Appointment, AppointmentStatus } from './entities/appointment.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { UsersService } from '../users/users.service';
+
+import { BarberGateway } from '../barber.gateway';
 
 export interface FindAppointmentsOptions {
   fecha?: string;
@@ -32,6 +35,8 @@ export class AppointmentsService {
   constructor(
     @InjectRepository(Appointment)
     private readonly appointmentsRepository: Repository<Appointment>,
+    private readonly usersService: UsersService,
+    private readonly barberGateway: BarberGateway,
   ) {}
 
   async create(
@@ -51,7 +56,72 @@ export class AppointmentsService {
 
     const appointment =
       this.appointmentsRepository.create(createAppointmentDto);
-    return await this.appointmentsRepository.save(appointment);
+    const saved = await this.appointmentsRepository.save(appointment);
+
+    // Emitimos el broadcast para que la TV (PWA) lo reciba en tiempo real
+    if (this.barberGateway && this.barberGateway.server) {
+      this.barberGateway.server.emit('new_appointment_broadcast', {
+        id: saved.id,
+        date: saved.fechaCita,
+        time: saved.horaCita,
+        barber: saved.nombreBarbero || 'Sin asignar',
+        client: saved.nombreCompleto,
+        status: saved.estado
+      });
+    }
+
+    return saved;
+  }
+
+  async findClientAppointments(userId: number): Promise<Appointment[]> {
+    if (!userId) {
+      return [];
+    }
+    try {
+      const user = await this.usersService.findById(userId);
+      
+      if (!user.email) {
+        return [];
+      }
+
+      // Buscar citas únicamente por correo electrónico para ser precisos
+      return await this.appointmentsRepository.find({
+        where: { correo: user.email },
+        order: {
+          fechaCita: 'DESC',
+          horaCita: 'DESC'
+        }
+      });
+    } catch (e) {
+      console.error('Error finding client appointments:', e);
+      return [];
+    }
+  }
+
+  async cancelClientAppointment(appointmentId: number, userId: number): Promise<Appointment> {
+    const user = await this.usersService.findById(userId);
+    const appointment = await this.findOne(appointmentId);
+    
+    // Verificar que la cita pertenezca al usuario (por correo o teléfono)
+    if (appointment.correo !== user.email && appointment.telefono !== user.telefono) {
+      throw new ConflictException('No tienes permiso para cancelar esta cita.');
+    }
+    
+    // Verificar que la cita esté en estado pendiente
+    if (appointment.estado !== AppointmentStatus.Pendiente) {
+      throw new ConflictException('Solo se pueden cancelar citas en estado pendiente.');
+    }
+    
+    appointment.estado = AppointmentStatus.Cancelada;
+    const saved = await this.appointmentsRepository.save(appointment);
+
+    if (this.barberGateway && this.barberGateway.server) {
+      this.barberGateway.server.emit('cancel_appointment_broadcast', {
+        id: saved.id
+      });
+    }
+    
+    return saved;
   }
 
   async findAll(
@@ -136,9 +206,12 @@ export class AppointmentsService {
     });
   }
 
-  async updateStatus(id: number, estado: string): Promise<Appointment> {
+  async updateStatus(id: number, estado: string, nombreBarbero?: string): Promise<Appointment> {
     const appointment = await this.findOne(id);
     appointment.estado = estado;
+    if (nombreBarbero) {
+      appointment.nombreBarbero = nombreBarbero;
+    }
     return await this.appointmentsRepository.save(appointment);
   }
 
