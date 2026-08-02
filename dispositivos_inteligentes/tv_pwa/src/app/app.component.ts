@@ -37,10 +37,21 @@ export class AppComponent implements OnInit, OnDestroy {
   promociones: any[] = [];
   socket: Socket | undefined;
   timer: any;
+  private securityChannel = new BroadcastChannel('barberia_tv_security');
 
   constructor(private datePipe: DatePipe) {}
 
   ngOnInit() {
+    // Escuchar eventos en canal de auditoría con validación de origen (SA.4)
+    this.securityChannel.onmessage = (event: MessageEvent) => {
+      const allowedOrigin = window.location.origin;
+      if (event.origin && event.origin !== allowedOrigin) {
+        console.error('⚠️ Transmisión de mensaje bloqueada: Intento de violación de origen desde', event.origin);
+        return;
+      }
+      console.log('[Seguridad TV] Evento de auditoría local validado con éxito:', event.data);
+    };
+
     // Reloj
     this.timer = setInterval(() => {
       this.currentTime = new Date();
@@ -145,22 +156,35 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.timer) clearInterval(this.timer);
     this.socket?.disconnect();
+    this.securityChannel.close(); // Cerrar canal de seguridad (SA.4)
   }
 
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     switch (event.key) {
       case 'ArrowUp':
-        if (this.focusedIndex > 1) this.focusedIndex -= 2;
+        if (this.focusedIndex > 1) {
+          this.focusedIndex -= 2;
+          this.broadcastSecurityLog('FOCUS_CHANGED');
+        }
         break;
       case 'ArrowDown':
-        if (this.focusedIndex < 2) this.focusedIndex += 2;
+        if (this.focusedIndex < 2) {
+          this.focusedIndex += 2;
+          this.broadcastSecurityLog('FOCUS_CHANGED');
+        }
         break;
       case 'ArrowLeft':
-        if (this.focusedIndex % 2 !== 0) this.focusedIndex -= 1;
+        if (this.focusedIndex % 2 !== 0) {
+          this.focusedIndex -= 1;
+          this.broadcastSecurityLog('FOCUS_CHANGED');
+        }
         break;
       case 'ArrowRight':
-        if (this.focusedIndex % 2 === 0) this.focusedIndex += 1;
+        if (this.focusedIndex % 2 === 0) {
+          this.focusedIndex += 1;
+          this.broadcastSecurityLog('FOCUS_CHANGED');
+        }
         break;
       case 'Enter':
         this.updateBackground();
@@ -168,7 +192,17 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  broadcastSecurityLog(actionType: string) {
+    // Enviar log de auditoría local
+    this.securityChannel.postMessage({
+      action: actionType,
+      targetCard: this.focusedIndex,
+      timestamp: new Date().toISOString()
+    });
+  }
+
   updateBackground() {
+    this.broadcastSecurityLog('BACKGROUND_MEDIA_SELECT');
     // Cambia el multimedia contextual al seleccionar (Enter) (SA.2.C)
     switch(this.focusedIndex) {
       case 0:
