@@ -31,7 +31,7 @@
     {
       "name": "api-data",
       "urls": [
-        "http://localhost:3000/**"
+        "https://barberiaproyecto-f2wb.onrender.com/**"
       ],
       "cacheConfig": {
         "strategy": "freshness",

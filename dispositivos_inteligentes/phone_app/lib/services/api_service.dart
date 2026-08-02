@@ -4,7 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiService {
   // En el emulador de Android 10.0.2.2 equivale al localhost de tu PC
-  static const String baseUrl = 'http://10.0.2.2:3000/api';
+  static const String baseUrl = 'https://barberiaproyecto-f2wb.onrender.com/api';
   final _storage = const FlutterSecureStorage();
 
   Future<Map<String, String>> _getHeaders() async {

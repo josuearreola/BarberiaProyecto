@@ -13,7 +13,7 @@ async function bootstrap() {
   const allowedOrigins = (
     process.env.FRONTEND_URLS ||
     process.env.FRONTEND_URL ||
-    'http://localhost:4200,http://localhost:8080'
+    'http://localhost:4200,http://localhost:8080,https://barberia-proyecto-nine.vercel.app,http://barberia-proyecto-nine.vercel.app'
   )
     .split(',')
     .map((origin) => origin.trim())

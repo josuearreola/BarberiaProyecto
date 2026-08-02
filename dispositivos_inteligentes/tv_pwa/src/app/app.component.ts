@@ -70,7 +70,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadPromociones();
 
     // Socket
-    this.socket = io('http://localhost:3000', {
+    this.socket = io('https://barberiaproyecto-f2wb.onrender.com', {
       transports: ['websocket'],
     });
 
@@ -99,7 +99,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   loadTodayAppointments() {
     const today = this.datePipe.transform(new Date(), 'yyyy-MM-dd') || '';
-    fetch(`http://localhost:3000/api/appointments/by-date/${today}`)
+    fetch(`https://barberiaproyecto-f2wb.onrender.com/api/appointments/by-date/${today}`)
       .then(res => res.json())
       .then((appointments: any[]) => {
         const newTurns: Turn[] = appointments
@@ -125,7 +125,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   loadServicios() {
-    fetch('http://localhost:3000/api/servicios')
+    fetch('https://barberiaproyecto-f2wb.onrender.com/api/servicios')
       .then(res => res.json())
       .then((data: any[]) => {
         this.servicios = data;
@@ -134,7 +134,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   loadPromociones() {
-    fetch('http://localhost:3000/api/promociones')
+    fetch('https://barberiaproyecto-f2wb.onrender.com/api/promociones')
       .then(res => res.json())
       .then((data: any[]) => {
         this.promociones = data;

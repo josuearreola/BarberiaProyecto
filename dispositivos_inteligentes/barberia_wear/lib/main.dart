@@ -66,7 +66,7 @@ class _WatchScreenState extends State<WatchScreen> {
   
   void _initSocket() {
     // Apunta al backend local para emuladores
-    _socket = IO.io('http://10.0.2.2:3000', <String, dynamic>{
+    _socket = IO.io('https://barberiaproyecto-f2wb.onrender.com', <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
     });
