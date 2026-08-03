@@ -42,7 +42,6 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(private datePipe: DatePipe) {}
 
   ngOnInit() {
-    // Escuchar eventos en canal de auditoría con validación de origen (SA.4)
     this.securityChannel.onmessage = (event: MessageEvent) => {
       const allowedOrigin = window.location.origin;
       if (event.origin && event.origin !== allowedOrigin) {
@@ -193,7 +192,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   broadcastSecurityLog(actionType: string) {
-    // Enviar log de auditoría local
     this.securityChannel.postMessage({
       action: actionType,
       targetCard: this.focusedIndex,
