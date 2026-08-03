@@ -2,7 +2,7 @@
 
 Este directorio contiene las aplicaciones que integran el ecosistema IoT y multipantalla del sistema de agendamiento para la barbería.
 
-## 📁 Contenido del Directorio
+## Contenido del Directorio
 
 - **[phone_app](./phone_app):** Aplicación móvil principal desarrollada en Flutter para clientes.
 - **[barberia_wear](./barberia_wear):** Aplicación para relojes inteligentes (Wear OS) desarrollada en Flutter.
@@ -10,7 +10,7 @@ Este directorio contiene las aplicaciones que integran el ecosistema IoT y multi
 
 ---
 
-## 🚀 Instrucciones de Ejecución Simultánea
+## Instrucciones de Ejecución Simultánea
 
 Para evaluar el correcto funcionamiento del ecosistema (simultaneidad de 3 dispositivos comunicados en tiempo real), sigue estos pasos:
 
@@ -76,7 +76,7 @@ flutter run
 
 ---
 
-## 🔄 Flujo de Prueba de Sincronización
+## Flujo de Prueba de Sincronización
 
 1. **Vincular Reloj:** En la pantalla del Wear OS, presiona el botón **Vincular**. El reloj comenzará a transmitir datos simulados de ritmo cardíaco y batería por Sockets al backend.
 2. **Conectar Teléfono:** Abre la app del teléfono, inicia sesión con un usuario cliente (ej: `Cliente12@gmail.com`), ve a la sección **Vincular Wear OS** y presiona **Buscar Reloj**. Se establecerá la conexión.
