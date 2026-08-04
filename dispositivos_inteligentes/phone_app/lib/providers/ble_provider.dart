@@ -18,11 +18,20 @@ class BleProvider with ChangeNotifier {
   String _tiempo = "--";
   String _dinero = "--";
   
+  String? _errorMessage;
+  Timer? _heartbeatTimer;
+  
   bool get isScanning => _isScanning;
   bool get isConnected => _isConnected;
   String get citas => _citas;
   String get tiempo => _tiempo;
   String get dinero => _dinero;
+  String? get errorMessage => _errorMessage;
+
+  void clearErrorMessage() {
+    _errorMessage = null;
+    notifyListeners();
+  }
   
   final String targetServiceUuid = "0000180F-0000-1000-8000-00805f9b34fb";
   final String targetCharacteristicUuid = "00002A19-0000-1000-8000-00805f9b34fb";
@@ -44,6 +53,9 @@ class BleProvider with ChangeNotifier {
     });
 
     _socket?.on('wearable_disconnect_broadcast', (_) {
+      if (_isConnected && _citas != "--") {
+        _errorMessage = "Conexión perdida con el Wear OS";
+      }
       disconnect();
     });
   }
@@ -59,6 +71,16 @@ class BleProvider with ChangeNotifier {
       if (!_isConnected) {
         _isConnected = true;
       }
+      
+      // Reiniciar temporizador de latido (heartbeat)
+      _heartbeatTimer?.cancel();
+      _heartbeatTimer = Timer(const Duration(seconds: 4), () {
+        if (_isConnected) {
+          _errorMessage = "Conexión perdida con el Wear OS (Sin respuesta)";
+          disconnect();
+        }
+      });
+
       notifyListeners();
     }
   }
@@ -146,6 +168,9 @@ class BleProvider with ChangeNotifier {
 
       _connectionSub = _device!.connectionState.listen((state) {
         if (state == BluetoothConnectionState.disconnected) {
+          if (_isConnected && _citas != "--") {
+            _errorMessage = "Conexión BLE perdida con el reloj";
+          }
           _isConnected = false;
           _resetData();
           notifyListeners();
@@ -183,6 +208,7 @@ class BleProvider with ChangeNotifier {
   }
 
   Future<void> disconnect() async {
+    _heartbeatTimer?.cancel();
     _notifySub?.cancel();
     _connectionSub?.cancel();
     await _device?.disconnect();

@@ -37,6 +37,22 @@ class _DeviceLinkScreenState extends State<DeviceLinkScreen> {
     final bleProvider = Provider.of<BleProvider>(context);
     final clientProvider = Provider.of<ClientProvider>(context);
 
+    // Alerta de conexión perdida
+    if (bleProvider.errorMessage != null) {
+      final msg = bleProvider.errorMessage!;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('⚠️ $msg'),
+            backgroundColor: Colors.redAccent,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        bleProvider.clearErrorMessage();
+      });
+    }
+
     // Alerta de ritmo cardíaco excedido con debounce para evitar crasheos (ANR)
     if (bleProvider.isConnected && bleProvider.dinero != "--") {
       final ritmoCardiaco = int.tryParse(bleProvider.dinero) ?? 0;
