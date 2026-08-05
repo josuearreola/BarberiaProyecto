@@ -37,7 +37,16 @@ export class AppComponent implements OnInit, OnDestroy {
   promociones: any[] = [];
   socket: Socket | undefined;
   timer: any;
+  galleryTimer: any;
   private securityChannel = new BroadcastChannel('barberia_tv_security');
+
+  galleryImages = [
+    'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1596178065887-1198b6148b2b?q=80&w=600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1605497746444-052d59f197b0?q=80&w=600&auto=format&fit=crop'
+  ];
+  currentGalleryIndex = 0;
 
   constructor(private datePipe: DatePipe) {}
 
@@ -105,6 +114,11 @@ export class AppComponent implements OnInit, OnDestroy {
         this.turns = this.turns.filter(t => t.id !== data.id);
       }
     });
+
+    // Temporizador de rotación de imágenes de la galería cada 3 segundos
+    this.galleryTimer = setInterval(() => {
+      this.currentGalleryIndex = (this.currentGalleryIndex + 1) % this.galleryImages.length;
+    }, 3000);
   }
 
   loadTodayAppointments() {
@@ -154,6 +168,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.timer) clearInterval(this.timer);
+    if (this.galleryTimer) clearInterval(this.galleryTimer);
     this.socket?.disconnect();
     this.securityChannel.close(); // Cerrar canal de seguridad (SA.4)
   }
