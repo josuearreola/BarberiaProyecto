@@ -41,10 +41,10 @@ export class AppComponent implements OnInit, OnDestroy {
   private securityChannel = new BroadcastChannel('barberia_tv_security');
 
   galleryImages = [
-    'assets/bg-turnos.jpg',
-    'assets/bg-servicios.jpg',
-    'assets/bg-promos.jpg',
-    'assets/bg-galeria.jpg'
+    'assets/estilo1.png',
+    'assets/estilo2.png',
+    'assets/estilo3.png',
+    'assets/estilo4.png'
   ];
   currentGalleryIndex = 0;
 
