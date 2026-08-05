@@ -41,10 +41,10 @@ export class AppComponent implements OnInit, OnDestroy {
   private securityChannel = new BroadcastChannel('barberia_tv_security');
 
   galleryImages = [
-    'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=600&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=600&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1596178065887-1198b6148b2b?q=80&w=600&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1605497746444-052d59f197b0?q=80&w=600&auto=format&fit=crop'
+    'assets/bg-turnos.jpg',
+    'assets/bg-servicios.jpg',
+    'assets/bg-promos.jpg',
+    'assets/bg-galeria.jpg'
   ];
   currentGalleryIndex = 0;
 
