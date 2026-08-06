@@ -3,8 +3,15 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiService {
-  // En el emulador de Android 10.0.2.2 equivale al localhost de tu PC
+  // OPCIÓN 1: Producción en Render (Activo por defecto)
   static const String baseUrl = 'https://barberiaproyecto-f2wb.onrender.com/api';
+
+  // OPCIÓN 2: Local en Emulador de Android Studio (10.0.2.2 equivale al localhost de tu PC)
+  // static const String baseUrl = 'http://10.0.2.2:3000/api';
+
+  // OPCIÓN 3: Local en Celular Físico vía Wi-Fi (Coloca la IP local de tu PC, ej. 192.168.1.85)
+  // static const String baseUrl = 'http://192.168.1.85:3000/api';
+
   final _storage = const FlutterSecureStorage();
 
   Future<Map<String, String>> _getHeaders() async {
