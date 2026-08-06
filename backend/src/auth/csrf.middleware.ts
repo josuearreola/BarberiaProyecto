@@ -14,12 +14,16 @@ export class CsrfMiddleware implements NestMiddleware {
       }
     }
 
+    const sessionSameSite =
+      (process.env.SESSION_SAME_SITE as 'lax' | 'strict' | 'none' | undefined) ||
+      'lax';
+
     // 2. Establecer la cookie XSRF-TOKEN para que Angular la lea automáticamente
     // Angular busca esta cookie por defecto y la envía de vuelta en la cabecera 'X-XSRF-TOKEN'
     res.cookie('XSRF-TOKEN', csrfToken, {
       httpOnly: false, // Debe ser false para que Angular pueda leerla desde JS
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      sameSite: sessionSameSite,
+      secure: sessionSameSite === 'none' ? true : (process.env.NODE_ENV === 'production'),
       path: '/',
     });
 
