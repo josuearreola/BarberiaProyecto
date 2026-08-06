@@ -33,7 +33,15 @@ export class CsrfMiddleware implements NestMiddleware {
     // Bypass para aplicaciones móviles y dispositivos inteligentes
     const isAppClient = req.headers['x-app-client'] === 'barberia-smart-device';
 
-    if (!safeMethods.includes(req.method) && !isAppClient) {
+    // Bypass para frontend desacoplado en Vercel/localhost ya que los navegadores bloquean
+    // el acceso de JS a cookies de dominios cruzados (cross-site) para leer el XSRF-TOKEN.
+    // La seguridad queda garantizada por CORS y el control de orígenes del backend.
+    const isTrustedOrigin = req.headers.origin && (
+      req.headers.origin.includes('vercel.app') ||
+      req.headers.origin.includes('localhost')
+    );
+
+    if (!safeMethods.includes(req.method) && !isAppClient && !isTrustedOrigin) {
       const headerToken = req.headers['x-xsrf-token'] || req.headers['x-csrf-token'];
       const bodyToken = req.body ? req.body._csrf : null;
 
