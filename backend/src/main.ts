@@ -48,9 +48,20 @@ async function bootstrap() {
     }),
   );
 
-  // Habilitar CORS para el frontend
+  // Habilitar CORS para el frontend y clientes locales (Flutter Web)
   app.enableCors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1')
+      ) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
     credentials: true,
   });
 

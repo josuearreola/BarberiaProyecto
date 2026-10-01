@@ -11,6 +11,7 @@ import 'package:phone_app/providers/client_provider.dart';
 import 'package:phone_app/providers/ble_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:phone_app/screens/client/consulta_web_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,6 +51,7 @@ class BarberiaApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/admin': (context) => const AdminMainScreen(),
         '/client': (context) => const ClientMainScreen(),
+        '/consulta-web': (context) => const ConsultaWebScreen(),
       },
     );
   }

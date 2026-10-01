@@ -5,6 +5,7 @@ import 'booking_tab.dart';
 import 'my_appointments_tab.dart';
 import 'profile_tab.dart';
 import 'device_link_screen.dart';
+import 'consulta_web_screen.dart';
 
 class ClientMainScreen extends StatefulWidget {
   const ClientMainScreen({super.key});
@@ -21,6 +22,7 @@ class _ClientMainScreenState extends State<ClientMainScreen> {
     BookingTab(),
     MyAppointmentsTab(),
     ProfileTab(),
+    ConsultaWebScreen(),
   ];
 
   @override
@@ -41,6 +43,16 @@ class _ClientMainScreenState extends State<ClientMainScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.public, color: AppColors.amarillo),
+            tooltip: 'ConsultaWeb (Práctica 3)',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ConsultaWebScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.watch, color: AppColors.amarillo),
             onPressed: () {
@@ -95,6 +107,7 @@ class _ClientMainScreenState extends State<ClientMainScreen> {
             BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: 'Reservar'),
             BottomNavigationBarItem(icon: Icon(Icons.book_online), label: 'Mis Citas'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+            BottomNavigationBarItem(icon: Icon(Icons.public), label: 'ConsultaWeb'),
           ],
         ),
       ),
