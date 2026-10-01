@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../theme.dart';
+import 'dart:html' as html;
+import 'dart:ui_web' as ui_web;
 
 class ConsultaWebScreen extends StatefulWidget {
   const ConsultaWebScreen({super.key});
@@ -33,6 +35,26 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
     super.dispose();
   }
 
+  String? _iframeViewType;
+
+  void _setupIframe(String url) {
+    if (kIsWeb) {
+      final viewType = 'iframe-view-${url.hashCode}-${DateTime.now().millisecondsSinceEpoch}';
+      ui_web.platformViewRegistry.registerViewFactory(
+        viewType,
+        (int viewId) {
+          final iframe = html.IFrameElement()
+            ..src = url
+            ..style.border = 'none'
+            ..style.width = '100%'
+            ..style.height = '100%';
+          return iframe;
+        },
+      );
+      _iframeViewType = viewType;
+    }
+  }
+
   Future<void> _consultarInformacion() async {
     FocusScope.of(context).unfocus();
 
@@ -41,6 +63,7 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
       _errorMessage = null;
       _responseBody = null;
       _statusCode = null;
+      _iframeViewType = null;
     });
 
     await Future.delayed(const Duration(milliseconds: 300));
@@ -71,7 +94,6 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
       http.Response response;
 
       if (kIsWeb) {
-        // En Flutter Web (Navegador Chrome), usamos el proxy CORS transparente para evitar bloqueo de política de origen de Chrome
         final proxyUrl = 'https://api.allorigins.win/raw?url=${Uri.encodeComponent(urlText)}';
         response = await http.get(Uri.parse(proxyUrl)).timeout(const Duration(seconds: 10));
       } else {
@@ -85,7 +107,8 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
         ).timeout(const Duration(seconds: 8));
       }
 
-      if (response != null && response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        _setupIframe(urlText);
         if (mounted) {
           setState(() {
             _isLoading = false;
@@ -402,7 +425,7 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
             // RF04: La información obtenida deberá mostrarse en pantalla.
             else if (_responseBody != null)
               DefaultTabController(
-                length: 2,
+                length: 3,
                 child: Container(
                   decoration: BoxDecoration(
                     color: AppColors.azulOscuro,
@@ -449,16 +472,52 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
                         indicatorColor: AppColors.amarillo,
                         labelColor: AppColors.amarillo,
                         unselectedLabelColor: Colors.white60,
+                        isScrollable: false,
                         tabs: [
+                          Tab(icon: Icon(Icons.web, size: 18), text: 'Página Real'),
                           Tab(icon: Icon(Icons.article_outlined, size: 18), text: 'Vista Texto'),
                           Tab(icon: Icon(Icons.code, size: 18), text: 'Código HTML'),
                         ],
                       ),
                       SizedBox(
-                        height: 350,
+                        height: 480,
                         child: TabBarView(
                           children: [
-                            // Pestaña 1: Texto formateado extraído del sitio web
+                            // Pestaña 1: Renderizado visual de la página web real (IFrame)
+                            ClipRRect(
+                              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+                              child: kIsWeb && _iframeViewType != null
+                                  ? HtmlElementView(viewType: _iframeViewType!)
+                                  : Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20.0),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            const Icon(Icons.language, color: AppColors.amarillo, size: 48),
+                                            const SizedBox(height: 12),
+                                            Text(
+                                              pageTitle.isNotEmpty ? pageTitle : 'Página Web Consultada',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            const SizedBox(height: 8),
+                                            const Text(
+                                              'La respuesta se ha procesado exitosamente. Cambie a la pestaña "Vista Texto" o "Código HTML" para ver la respuesta detallada.',
+                                              style: const TextStyle(color: Colors.white70, fontSize: 13),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                            ),
+
+                            // Pestaña 2: Texto formateado extraído del sitio web
                             Padding(
                               padding: const EdgeInsets.all(14.0),
                               child: SingleChildScrollView(
@@ -491,7 +550,7 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
                               ),
                             ),
 
-                            // Pestaña 2: HTML crudo de la respuesta
+                            // Pestaña 3: HTML crudo de la respuesta
                             Padding(
                               padding: const EdgeInsets.all(14.0),
                               child: SingleChildScrollView(
