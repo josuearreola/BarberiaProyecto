@@ -2,8 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../theme.dart';
-import 'dart:html' as html;
-import 'dart:ui_web' as ui_web;
+import 'consulta_web_iframe.dart';
 
 class ConsultaWebScreen extends StatefulWidget {
   const ConsultaWebScreen({super.key});
@@ -40,17 +39,7 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
   void _setupIframe(String url) {
     if (kIsWeb) {
       final viewType = 'iframe-view-${url.hashCode}-${DateTime.now().millisecondsSinceEpoch}';
-      ui_web.platformViewRegistry.registerViewFactory(
-        viewType,
-        (int viewId) {
-          final iframe = html.IFrameElement()
-            ..src = url
-            ..style.border = 'none'
-            ..style.width = '100%'
-            ..style.height = '100%';
-          return iframe;
-        },
-      );
+      registerIframeView(viewType, url);
       _iframeViewType = viewType;
     }
   }
@@ -487,7 +476,7 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
                             ClipRRect(
                               borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
                               child: kIsWeb && _iframeViewType != null
-                                  ? HtmlElementView(viewType: _iframeViewType!)
+                                  ? buildIframeWidget(_iframeViewType!)
                                   : Center(
                                       child: Padding(
                                         padding: const EdgeInsets.all(20.0),
@@ -508,7 +497,7 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
                                             const SizedBox(height: 8),
                                             const Text(
                                               'La respuesta se ha procesado exitosamente. Cambie a la pestaña "Vista Texto" o "Código HTML" para ver la respuesta detallada.',
-                                              style: const TextStyle(color: Colors.white70, fontSize: 13),
+                                              style: TextStyle(color: Colors.white70, fontSize: 13),
                                               textAlign: TextAlign.center,
                                             ),
                                           ],
