@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../theme.dart';
@@ -42,15 +43,12 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
       _statusCode = null;
     });
 
-    // RF05: Mientras se realiza la petición deberá mostrarse: Consultando...
-    // Pequeño retardo para visualización clara si la red es muy rápida
     await Future.delayed(const Duration(milliseconds: 300));
 
     if (_simulateOffline) {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          // RF06: Si existe un error de conexión deberá mostrarse: No fue posible obtener la información.
           _errorMessage = 'No fue posible obtener la información.';
         });
       }
@@ -70,19 +68,30 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
 
     try {
       final uri = Uri.parse(urlText);
-      final response = await http.get(
-        uri,
-        headers: {
-          'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept':
-              'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        },
-      ).timeout(
-        const Duration(seconds: 10),
-      );
 
-      if (response.statusCode >= 200 && response.statusCode < 300) {
+      http.Response? response;
+
+      // Intento directo 1
+      try {
+        response = await http.get(
+          uri,
+          headers: {
+            'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          },
+        ).timeout(const Duration(seconds: 8));
+      } catch (e) {
+        // En Flutter Web, si el sitio externo no envía cabeceras CORS, probamos a través de un proxy CORS público para Web
+        if (kIsWeb) {
+          final proxyUrl = 'https://corsproxy.io/?${Uri.encodeComponent(urlText)}';
+          response = await http.get(Uri.parse(proxyUrl)).timeout(const Duration(seconds: 10));
+        } else {
+          rethrow;
+        }
+      }
+
+      if (response != null && response.statusCode >= 200 && response.statusCode < 300) {
         if (mounted) {
           setState(() {
             _isLoading = false;
@@ -94,7 +103,6 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
         if (mounted) {
           setState(() {
             _isLoading = false;
-            // RF06
             _errorMessage = 'No fue posible obtener la información.';
           });
         }
@@ -103,7 +111,6 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          // RF06: Si existe un error de conexión deberá mostrarse: No fue posible obtener la información.
           _errorMessage = 'No fue posible obtener la información.';
         });
       }
