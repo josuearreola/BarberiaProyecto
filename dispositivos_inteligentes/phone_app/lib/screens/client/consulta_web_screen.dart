@@ -68,11 +68,13 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
 
     try {
       final uri = Uri.parse(urlText);
+      http.Response response;
 
-      http.Response? response;
-
-      // Intento directo 1
-      try {
+      if (kIsWeb) {
+        // En Flutter Web (Navegador Chrome), usamos el proxy CORS transparente para evitar bloqueo de política de origen de Chrome
+        final proxyUrl = 'https://api.allorigins.win/raw?url=${Uri.encodeComponent(urlText)}';
+        response = await http.get(Uri.parse(proxyUrl)).timeout(const Duration(seconds: 10));
+      } else {
         response = await http.get(
           uri,
           headers: {
@@ -81,14 +83,6 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           },
         ).timeout(const Duration(seconds: 8));
-      } catch (e) {
-        // En Flutter Web, si el sitio externo no envía cabeceras CORS, probamos a través de un proxy CORS público para Web
-        if (kIsWeb) {
-          final proxyUrl = 'https://corsproxy.io/?${Uri.encodeComponent(urlText)}';
-          response = await http.get(Uri.parse(proxyUrl)).timeout(const Duration(seconds: 10));
-        } else {
-          rethrow;
-        }
       }
 
       if (response != null && response.statusCode >= 200 && response.statusCode < 300) {
