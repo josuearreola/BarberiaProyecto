@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../models/appointment_model.dart';
 import '../services/api_service.dart';
 
@@ -99,6 +100,47 @@ class ClientProvider with ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<Map<String, dynamic>?> getAudioPresignedUrl({String? fileName}) async {
+    try {
+      final response = await _apiService.post('/appointments/audio-presigned-url', {
+        if (fileName != null) 'fileName': fileName,
+      });
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        _error = 'Error al solicitar URL preasignada: ${response.statusCode}';
+        return null;
+      }
+    } catch (e) {
+      _error = 'Error al conectar con el servidor: $e';
+      return null;
+    }
+  }
+
+  Future<bool> uploadAudioToPresignedUrl(String uploadUrl, List<int> audioBytes) async {
+    try {
+      final response = await http.put(
+        Uri.parse(uploadUrl),
+        headers: {
+          'Content-Type': 'audio/m4a',
+          'x-app-client': 'barberia-smart-device',
+        },
+        body: audioBytes,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        _error = 'Error al subir nota de voz: ${response.statusCode}';
+        return false;
+      }
+    } catch (e) {
+      _error = 'Error al subir archivo de audio: $e';
+      return false;
     }
   }
 }

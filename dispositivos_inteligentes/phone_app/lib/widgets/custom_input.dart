@@ -9,6 +9,8 @@ class CustomInput extends StatefulWidget {
   final TextInputType keyboardType;
   final IconData? prefixIcon;
   final String? Function(String?)? validator;
+  final int? maxLength;
+  final bool showCounter;
 
   const CustomInput({
     super.key,
@@ -19,6 +21,8 @@ class CustomInput extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.prefixIcon,
     this.validator,
+    this.maxLength,
+    this.showCounter = false,
   });
 
   @override
@@ -37,6 +41,10 @@ class _CustomInputState extends State<CustomInput> {
         obscureText: widget.isPassword ? _obscureText : false,
         keyboardType: widget.keyboardType,
         validator: widget.validator,
+        maxLength: widget.maxLength,
+        buildCounter: widget.showCounter
+            ? null
+            : (context, {required currentLength, required isFocused, maxLength}) => null,
         style: Theme.of(context).textTheme.bodyLarge,
         decoration: InputDecoration(
           labelText: widget.label,

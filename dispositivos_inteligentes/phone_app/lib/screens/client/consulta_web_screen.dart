@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import '../../theme.dart';
 import 'consulta_web_iframe.dart';
@@ -21,6 +22,7 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
   String? _responseBody;
   int? _statusCode;
   bool _simulateOffline = false;
+  String? _iframeViewType;
 
   @override
   void initState() {
@@ -33,8 +35,6 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
     _urlController.dispose();
     super.dispose();
   }
-
-  String? _iframeViewType;
 
   void _setupIframe(String url) {
     if (kIsWeb) {
@@ -57,6 +57,7 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
 
     await Future.delayed(const Duration(milliseconds: 300));
 
+    // RF06: Prueba 2 - Simular sin conexión
     if (_simulateOffline) {
       if (mounted) {
         setState(() {
@@ -93,7 +94,7 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
                 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           },
-        ).timeout(const Duration(seconds: 8));
+        ).timeout(const Duration(seconds: 10));
       }
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -123,40 +124,291 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
     }
   }
 
-  // Extrae texto plano limpio sin etiquetas HTML
-  String _stripHtml(String htmlString) {
-    // Reemplaza <p>, <br>, <h1>..<h1> con saltos de línea
-    String text = htmlString
-        .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
-        .replaceAll(RegExp(r'</?(p|h1|h2|h3|h4|div|li)[^>]*>', caseSensitive: false), '\n');
-    // Remueve todos los demás tags HTML
-    text = text.replaceAll(RegExp(r'<[^>]*>'), '');
-    // Decodifica entidades HTML comunes
-    text = text
+  // Decodifica entidades HTML habituales
+  String _decodeEntities(String str) {
+    return str
         .replaceAll('&nbsp;', ' ')
         .replaceAll('&amp;', '&')
         .replaceAll('&lt;', '<')
         .replaceAll('&gt;', '>')
         .replaceAll('&quot;', '"')
-        .replaceAll('&#39;', "'");
-    // Colapsa múltiples saltos de línea repetidos
-    text = text.replaceAll(RegExp(r'\n\s*\n+'), '\n\n').trim();
-    return text;
+        .replaceAll('&#39;', "'")
+        .replaceAll('&aacute;', 'á')
+        .replaceAll('&eacute;', 'é')
+        .replaceAll('&iacute;', 'í')
+        .replaceAll('&oacute;', 'ó')
+        .replaceAll('&uacute;', 'ú')
+        .replaceAll('&ntilde;', 'ñ')
+        .replaceAll('&Aacute;', 'Á')
+        .replaceAll('&Eacute;', 'É')
+        .replaceAll('&Iacute;', 'Í')
+        .replaceAll('&Oacute;', 'Ó')
+        .replaceAll('&Uacute;', 'Ú')
+        .replaceAll('&Ntilde;', 'Ñ');
   }
 
-  // Extrae el título del documento HTML <title>...</title>
+  // Extrae el título del documento HTML o OpenGraph
   String _extractTitle(String htmlString) {
-    final match = RegExp(r'<title>(.*?)</title>', caseSensitive: false, dotAll: true).firstMatch(htmlString);
+    final ogMatch = RegExp(
+      "<meta[^>]+property=[\"']og:title[\"'][^>]+content=[\"']([^\"']+)[\"']",
+      caseSensitive: false,
+    ).firstMatch(htmlString);
+    if (ogMatch != null && ogMatch.groupCount >= 1) {
+      return _decodeEntities(ogMatch.group(1)!.trim());
+    }
+
+    final match = RegExp(
+      r'<title>(.*?)</title>',
+      caseSensitive: false,
+      dotAll: true,
+    ).firstMatch(htmlString);
     if (match != null && match.groupCount >= 1) {
-      return match.group(1)!.replaceAll(RegExp(r'\s+'), ' ').trim();
+      return _decodeEntities(match.group(1)!.replaceAll(RegExp(r'\s+'), ' ').trim());
     }
     return 'Recurso Web Obtenido';
+  }
+
+  // Extrae la descripción o resumen del documento HTML
+  String _extractDescription(String htmlString) {
+    final descMatch = RegExp(
+      "<meta[^>]+(?:name|property)=[\"'](?:description|og:description)[\"'][^>]+content=[\"']([^\"']+)[\"']",
+      caseSensitive: false,
+    ).firstMatch(htmlString);
+    if (descMatch != null && descMatch.groupCount >= 1) {
+      return _decodeEntities(descMatch.group(1)!.trim());
+    }
+    return '';
+  }
+
+  // Extrae la imagen destacada (og:image o twitter:image)
+  String _extractImage(String htmlString) {
+    final imgMatch = RegExp(
+      "<meta[^>]+(?:property|name)=[\"'](?:og:image|twitter:image)[\"'][^>]+content=[\"']([^\"']+)[\"']",
+      caseSensitive: false,
+    ).firstMatch(htmlString);
+    if (imgMatch != null && imgMatch.groupCount >= 1) {
+      return imgMatch.group(1)!.trim();
+    }
+    return '';
+  }
+
+  // Limpieza robusta de HTML para extraer texto legible sin código script ni estilos
+  String _stripHtml(String htmlString) {
+    String text = htmlString;
+    // 1. Eliminar bloques de script, style, noscript y comentarios HTML
+    text = text.replaceAll(RegExp(r'<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>', caseSensitive: false), ' ');
+    text = text.replaceAll(RegExp(r'<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>', caseSensitive: false), ' ');
+    text = text.replaceAll(RegExp(r'<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>', caseSensitive: false), ' ');
+    text = text.replaceAll(RegExp(r'<!--[\s\S]*?-->'), ' ');
+
+    // 2. Reemplazar saltos de línea y etiquetas de bloques de texto
+    text = text.replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n');
+    text = text.replaceAll(RegExp(r'</?(p|h[1-6]|div|li|tr|blockquote)[^>]*>', caseSensitive: false), '\n');
+
+    // 3. Remover el resto de etiquetas HTML
+    text = text.replaceAll(RegExp(r'<[^>]*>'), ' ');
+
+    // 4. Decodificar entidades
+    text = _decodeEntities(text);
+
+    // 5. Filtrar líneas vacías y unirlas limpiamente
+    final lines = text
+        .split('\n')
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .toList();
+
+    return lines.join('\n\n');
+  }
+
+  // Vista visual rica de la página web (Funciona en Android y todas las plataformas SIN MainActivity)
+  Widget _buildVisualPageReader(
+    String url,
+    String title,
+    String description,
+    String imageUrl,
+    String cleanText,
+  ) {
+    final uri = Uri.tryParse(url);
+    final host = uri?.host ?? 'sitio-web.com';
+    final paragraphs = cleanText
+        .split('\n\n')
+        .where((p) => p.trim().length > 15)
+        .toList();
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(14.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Barra de dirección web simulada (con candado HTTPS)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black54,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.lock_rounded, color: Colors.greenAccent, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    host,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.greenAccent.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    'HTTPS 200 OK',
+                    style: TextStyle(
+                      color: Colors.greenAccent,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Imagen de portada del artículo (si existe en la página)
+          if (imageUrl.isNotEmpty) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                imageUrl,
+                height: 180,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Título principal del sitio / artículo
+          Text(
+            title.isNotEmpty ? title : 'Contenido Web',
+            style: const TextStyle(
+              color: AppColors.amarillo,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              height: 1.3,
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Tarjeta de descripción destacada
+          if (description.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.amarillo.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: const Border(left: BorderSide(color: AppColors.amarillo, width: 3.5)),
+              ),
+              child: Text(
+                description,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontStyle: FontStyle.italic,
+                  height: 1.4,
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
+
+          Row(
+            children: [
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.amarillo,
+                  side: const BorderSide(color: AppColors.amarillo),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                ),
+                icon: const Icon(Icons.copy, size: 14),
+                label: const Text('Copiar URL', style: TextStyle(fontSize: 12)),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: url));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Enlace copiado al portapapeles.'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white70,
+                  side: const BorderSide(color: Colors.white24),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                ),
+                icon: const Icon(Icons.text_fields, size: 14),
+                label: const Text('Copiar Texto', style: TextStyle(fontSize: 12)),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: cleanText));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Texto extraído copiado al portapapeles.'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+
+          const Divider(color: Colors.white24, height: 24),
+
+          // Secciones de contenido estructurado extraído de la página
+          if (paragraphs.isNotEmpty)
+            ...paragraphs.take(25).map(
+                  (para) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Text(
+                      para,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13.5,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                )
+          else
+            Text(
+              cleanText.isNotEmpty ? cleanText : 'Sin texto visible disponible.',
+              style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+            ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final textContent = _responseBody != null ? _stripHtml(_responseBody!) : '';
     final pageTitle = _responseBody != null ? _extractTitle(_responseBody!) : '';
+    final pageDescription = _responseBody != null ? _extractDescription(_responseBody!) : '';
+    final pageImage = _responseBody != null ? _extractImage(_responseBody!) : '';
+    final urlText = _urlController.text.trim();
 
     return Scaffold(
       backgroundColor: AppColors.negro,
@@ -190,12 +442,12 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.amarillo.withOpacity(0.3)),
               ),
-              child: Column(
+              child: const Column(
                 children: [
-                  const Icon(Icons.public, color: AppColors.amarillo, size: 40),
-                  const SizedBox(height: 8),
+                  Icon(Icons.public, color: AppColors.amarillo, size: 40),
+                  SizedBox(height: 8),
                   // RF01: Al iniciar la aplicación deberá mostrar "Consulta de información"
-                  const Text(
+                  Text(
                     'Consulta de información',
                     style: TextStyle(
                       fontSize: 22,
@@ -204,8 +456,8 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
+                  SizedBox(height: 4),
+                  Text(
                     'Extensión del sitio personal',
                     style: TextStyle(fontSize: 13, color: Colors.white70),
                   ),
@@ -463,50 +715,30 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
                         unselectedLabelColor: Colors.white60,
                         isScrollable: false,
                         tabs: [
-                          Tab(icon: Icon(Icons.web, size: 18), text: 'Página Real'),
+                          Tab(icon: Icon(Icons.web, size: 18), text: 'Página Web'),
                           Tab(icon: Icon(Icons.article_outlined, size: 18), text: 'Vista Texto'),
                           Tab(icon: Icon(Icons.code, size: 18), text: 'Código HTML'),
                         ],
                       ),
                       SizedBox(
-                        height: 480,
+                        height: 520,
                         child: TabBarView(
                           children: [
-                            // Pestaña 1: Renderizado visual de la página web real (IFrame)
+                            // Pestaña 1: Renderizado visual del contenido de la página web
                             ClipRRect(
                               borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
                               child: kIsWeb && _iframeViewType != null
                                   ? buildIframeWidget(_iframeViewType!)
-                                  : Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(20.0),
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            const Icon(Icons.language, color: AppColors.amarillo, size: 48),
-                                            const SizedBox(height: 12),
-                                            Text(
-                                              pageTitle.isNotEmpty ? pageTitle : 'Página Web Consultada',
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                            const SizedBox(height: 8),
-                                            const Text(
-                                              'La respuesta se ha procesado exitosamente. Cambie a la pestaña "Vista Texto" o "Código HTML" para ver la respuesta detallada.',
-                                              style: TextStyle(color: Colors.white70, fontSize: 13),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                  : _buildVisualPageReader(
+                                      urlText,
+                                      pageTitle,
+                                      pageDescription,
+                                      pageImage,
+                                      textContent,
                                     ),
                             ),
 
-                            // Pestaña 2: Texto formateado extraído del sitio web
+                            // Pestaña 2: Texto limpio extraído del sitio web
                             Padding(
                               padding: const EdgeInsets.all(14.0),
                               child: SingleChildScrollView(

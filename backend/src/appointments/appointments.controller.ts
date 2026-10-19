@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Body,
   Param,
   Delete,
@@ -29,6 +30,32 @@ export class AppointmentsController {
   @HttpCode(HttpStatus.CREATED)
   create(@Body() createAppointmentDto: CreateAppointmentDto) {
     return this.appointmentsService.create(createAppointmentDto);
+  }
+
+  @Post('audio-presigned-url')
+  getAudioPresignedUrl(@Req() req: any, @Body() body: { fileName?: string }) {
+    const host = req.get('host');
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    return this.appointmentsService.generateAudioPresignedUrl(
+      body?.fileName,
+      `${protocol}://${host}`,
+    );
+  }
+
+  @Put('upload-audio')
+  async uploadAudio(
+    @Query('fileName') fileName: string,
+    @Query('expires') expires: string,
+    @Query('signature') signature: string,
+    @Req() req: any,
+  ) {
+    const buffer = req.body;
+    return this.appointmentsService.saveUploadedAudio(
+      fileName,
+      expires,
+      signature,
+      buffer,
+    );
   }
 
   // Ruta PÚBLICA para que la TV PWA pueda cargar citas del día sin autenticación

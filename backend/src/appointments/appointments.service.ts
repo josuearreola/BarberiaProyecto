@@ -2,7 +2,12 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as crypto from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
 import { Appointment, AppointmentStatus } from './entities/appointment.entity';
@@ -245,5 +250,77 @@ export class AppointmentsService {
   async remove(id: number): Promise<void> {
     const appointment = await this.findOne(id);
     await this.appointmentsRepository.remove(appointment);
+  }
+
+  generateAudioPresignedUrl(fileName?: string, baseUrl?: string) {
+    const ext = fileName && fileName.includes('.') ? path.extname(fileName) : '.m4a';
+    const uniqueName = `audio_${Date.now()}_${crypto.randomBytes(4).toString('hex')}${ext}`;
+    const expires = Date.now() + 15 * 60 * 1000; // Válida por 15 minutos
+
+    const secret = process.env.SESSION_SECRET || 'audio_upload_secret';
+    const signature = crypto
+      .createHmac('sha256', secret)
+      .update(`${uniqueName}:${expires}`)
+      .digest('hex');
+
+    const cleanBaseUrl = (baseUrl || 'http://localhost:3000').replace(/\/$/, '');
+    
+    // uploadUrl es la URL preasignada a donde la app móvil subirá el audio con PUT
+    const uploadUrl = `${cleanBaseUrl}/api/appointments/upload-audio?fileName=${encodeURIComponent(uniqueName)}&expires=${expires}&signature=${signature}`;
+    
+    // fileUrl es la URL final donde queda alojado el audio para guardarlo en 'notas'
+    const fileUrl = `${cleanBaseUrl}/uploads/audio/${uniqueName}`;
+
+    return {
+      uploadUrl,
+      fileUrl,
+      fileName: uniqueName,
+      expires,
+    };
+  }
+
+  async saveUploadedAudio(
+    fileName: string,
+    expires: string,
+    signature: string,
+    fileBuffer: Buffer,
+  ) {
+    if (!fileName || !expires || !signature) {
+      throw new BadRequestException('Faltan parámetros de la URL preasignada');
+    }
+
+    if (Date.now() > Number(expires)) {
+      throw new UnauthorizedException('La URL preasignada ha expirado');
+    }
+
+    const secret = process.env.SESSION_SECRET || 'audio_upload_secret';
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(`${fileName}:${expires}`)
+      .digest('hex');
+
+    if (signature !== expectedSignature) {
+      throw new UnauthorizedException('Firma de URL preasignada inválida');
+    }
+
+    if (!fileBuffer || fileBuffer.length === 0) {
+      throw new BadRequestException('No se recibió contenido de audio');
+    }
+
+    const safeFileName = path.basename(fileName);
+    const uploadsDir = path.join(process.cwd(), 'uploads', 'audio');
+
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    const filePath = path.join(uploadsDir, safeFileName);
+    await fs.promises.writeFile(filePath, fileBuffer);
+
+    return {
+      success: true,
+      fileName: safeFileName,
+      size: fileBuffer.length,
+    };
   }
 }

@@ -1,0 +1,360 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- PAQUETES BÁSICOS Y CODIFICACIÓN ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% --- DISEÑO DE PÁGINA Y MÁRGENES ---
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{setspace}
+\setstretch{1.15}
+
+% --- TABLAS Y ELEMENTOS GRÁFICOS ---
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
+
+% --- COLORES Y CAJAS DESTACADAS ---
+\usepackage{xcolor}
+\definecolor{primaryDark}{RGB}{20, 35, 55}     % Azul marino oscuro
+\definecolor{accentGold}{RGB}{190, 135, 45}     % Tono dorado barbería
+\definecolor{slateGray}{RGB}{85, 95, 110}      % Gris texto secundario
+\definecolor{codeBg}{RGB}{246, 248, 250}       % Fondo claro
+
+\usepackage[most]{tcolorbox}
+\newtcolorbox{conceptbox}[2][]{
+    enhanced,
+    colback=codeBg,
+    colframe=primaryDark,
+    arc=2mm,
+    fonttitle=\bfseries\color{white},
+    title=#2,
+    boxrule=0.8pt,
+    leftrule=4pt,
+    titlerule=0pt,
+    attach boxed title to top left={yshift=-2mm, xshift=4mm},
+    boxed title style={arc=1.5mm, boxrule=0pt, colback=primaryDark},
+    #1
+}
+
+\newtcolorbox{firmwarebox}[2][]{
+    enhanced,
+    colback=white,
+    colframe=accentGold,
+    arc=2mm,
+    fonttitle=\bfseries\color{white},
+    title=#2,
+    boxrule=0.8pt,
+    leftrule=4pt,
+    titlerule=0pt,
+    attach boxed title to top left={yshift=-2mm, xshift=4mm},
+    boxed title style={arc=1.5mm, boxrule=0pt, colback=accentGold},
+    #1
+}
+
+% --- LISTAS ---
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=1.5em, itemsep=0.2em, topsep=0.2em}
+\setlist[enumerate]{leftmargin=1.5em, itemsep=0.2em, topsep=0.2em}
+
+% --- ENLACES Y METADATOS ---
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primaryDark,
+    citecolor=accentGold,
+    urlcolor=accentGold,
+    pdftitle={Propuesta Práctica de Mejoras Móviles y Firmware - Barbería},
+    pdfauthor={Proyecto Barbería}
+}
+
+% --- ENCABEZADOS Y PIES ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{slateGray}\textbf{Ecosistema Barbería} | Propuesta Técnica Viable (1 Mes)}
+\fancyhead[R]{\small\color{slateGray}\thepage}
+\fancyfoot[C]{\small\color{slateGray}Mejoras de Hardware, Sensores y Relación con el Firmware}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.3pt}
+
+% --- FORMATO DE TÍTULOS ---
+\titleformat{\section}{\normalfont\Large\bfseries\color{primaryDark}}{\thesection}{1em}{}[\titlerule]
+\titleformat{\subsection}{\normalfont\large\bfseries\color{primaryDark}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries\color{accentGold}}{\thesubsubsection}{1em}{}
+
+% =========================================================================
+\begin{document}
+% =========================================================================
+
+% --- PORTADA SENCILLA Y ELEGANTE ---
+\begin{titlepage}
+    \centering
+    \vspace*{1.5cm}
+    
+    {\Huge \textbf{\color{primaryDark}SISTEMA DE GESTIÓN PARA BARBERÍA}}\\[0.4cm]
+    {\LARGE \textbf{\color{accentGold}Aplicación Móvil en Flutter}}\\[1.5cm]
+    
+    \rule{\linewidth}{1pt}\\[0.4cm]
+    {\huge \bfseries Propuesta de Mejoras Técnicas Viables en 1 Mes}\\[0.3cm]
+    {\Large Integración de Sensores Móviles (Cámara, GPS, Micrófono, Huella) y su Relación con el Firmware del Teléfono}\\[0.4cm]
+    \rule{\linewidth}{1pt}\\[2cm]
+    
+    \begin{minipage}{0.48\textwidth}
+        \textbf{\color{primaryDark}Alcance:} 4 Semanas (Sprint Realista)\\
+        \textbf{\color{primaryDark}Tecnología Móvil:} Flutter / Dart\\
+        \textbf{\color{primaryDark}Ecosistema:} App Celular, Wear OS y TV\\
+        \textbf{\color{primaryDark}Backend:} NestJS + WebSockets
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \flushright
+        \textbf{\color{primaryDark}Enfoque:} Práctico y Factible\\
+        \textbf{\color{primaryDark}Complejidad:} Sin 3D / Sin modelos pesados\\
+        \textbf{\color{primaryDark}Fecha:} \today
+    \end{minipage}
+    
+    \vfill
+    
+    \begin{tcolorbox}[colback=codeBg, colframe=primaryDark, arc=2mm, boxrule=0.7pt]
+        \centering
+        \small \textbf{Objetivo del Documento:} Plantear mejoras concretas, útiles y de rápida implementación (1 mes de desarrollo) aprovechando las funciones físicas del smartphone (cámara, GPS, micrófono, vibración y lector de huella), explicando claramente cómo interactúan con el sistema operativo y el firmware del teléfono.
+    \end{tcolorbox}
+    
+    \vspace*{0.5cm}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+% =========================================================================
+\section{Introducción y Alcance del Proyecto}
+% =========================================================================
+
+El sistema de la barbería ya cuenta con una base sólida: un backend centralizado, una aplicación móvil en Flutter (\texttt{phone\_app}), soporte para reloj inteligente Wear OS y una pantalla web informativa para la sala de espera (Smart TV).
+
+El objetivo de esta propuesta es incorporar funciones que aprovechen el hardware nativo del teléfono celular (cámara, ubicación satelital, micrófono y biometría) con las siguientes condiciones:
+\begin{itemize}
+    \item \textbf{Cero complicaciones 3D o realidad aumentada pesada:} Se descartan mallas tridimensionales complejas o filtros pesados que requieren meses de investigación y sobrecalientan los dispositivos.
+    \item \textbf{100\% Realista para 1 mes de trabajo:} Funcionalidades que un desarrollador o equipo pequeño puede programar, probar y desplegar usando paquetes estándar y probados de Flutter.
+    \item \textbf{Utilidad real para la barbería:} Cada función resuelve un problema cotidiano: no hacer filas, llegar a tiempo, mostrarle al barbero el corte deseado y proteger la cuenta del cliente.
+\end{itemize}
+
+% =========================================================================
+\section{Mejoras con el Software y Sensores del Teléfono}
+% =========================================================================
+
+A continuación, se describen las 5 mejoras seleccionadas para la aplicación móvil:
+
+% -------------------------------------------------------------------------
+\subsection{Cámara: Foto de Referencia del Corte y Escáner QR de Check-in}
+% -------------------------------------------------------------------------
+
+En lugar de modelos 3D futuristas, la cámara se utiliza para dos tareas prácticas y rápidas de programar:
+
+\begin{enumerate}
+    \item \textbf{Foto de Referencia del Corte (Catálogo Personal):}
+    \begin{itemize}
+        \item \textbf{¿Qué hace?:} Al momento de agendar una cita o editar su perfil, el cliente puede tomar una foto con la cámara (o seleccionarla de su galería) mostrando exactamente cómo quiere su corte de cabello o barba.
+        \item \textbf{Utilidad en la barbería:} Evita malentendidos entre el cliente y el barbero. La foto se sube al backend y el barbero la ve directamente al abrir la cita.
+        \item \textbf{Librería en Flutter:} Paquete \texttt{image\_picker} con compresión simple (\texttt{flutter\_image\_compress}).
+        \item \textbf{Tiempo estimado:} 3 a 4 días.
+    \end{itemize}
+
+    \item \textbf{Check-in Presencial con Código QR:}
+    \begin{itemize}
+        \item \textbf{¿Qué hace?:} En la entrada de la barbería se coloca un cartel con un código QR. Al llegar, el cliente abre la app, escanea el código con su cámara y su cita pasa automáticamente al estado \textit{"En espera en el local"}.
+        \item \textbf{Integración con la TV:} Al escanear el QR, la pantalla de la barbería (\texttt{tv\_pwa}) actualiza en tiempo real su turno a color verde/activo mediante WebSockets.
+        \item \textbf{Librería en Flutter:} Paquete \texttt{mobile\_scanner} (fácil de integrar y muy rápido).
+        \item \textbf{Tiempo estimado:} 3 a 5 días.
+    \end{itemize}
+\end{enumerate}
+
+% -------------------------------------------------------------------------
+\subsection{GPS: Botón "Cómo Llegar" y Cálculo de Distancia a la Barbería}
+% -------------------------------------------------------------------------
+
+\begin{itemize}
+    \item \textbf{¿Qué hace?:} 
+    \begin{enumerate}
+        \item Muestra en la tarjeta de la cita la distancia actual en tiempo real entre el usuario y el local (ejemplo: \textit{"Estás a 2.3 km de la barbería"}).
+        \item Incluye un botón directo \textbf{"Abrir en Google Maps / Waze"}, que abre la aplicación de navegación nativa con la ruta ya trazada hacia la barbería.
+    \end{enumerate}
+    \item \textbf{Utilidad en la barbería:} Ayuda a los clientes nuevos a no perderse y les permite calcular cuándo deben salir de casa para no llegar tarde a su turno.
+    \item \textbf{Librerías en Flutter:} Paquete \texttt{geolocator} (para obtener latitud/longitud en 1 sola lectura) y paquete \texttt{url\_launcher} (para abrir Google Maps).
+    \item \textbf{Tiempo estimado:} 2 a 3 días.
+\end{itemize}
+
+% -------------------------------------------------------------------------
+\subsection{Micrófono: Dictado por Voz para Notas de la Cita}
+% -------------------------------------------------------------------------
+
+\begin{itemize}
+    \item \textbf{¿Qué hace?:} En la pantalla de reserva de cita, al lado del campo de texto de \textit{"Notas o especificaciones"}, se añade un botón de micrófono. El cliente lo mantiene presionado y dicta sus indicaciones (ejemplo: \textit{"Degradado medio, no usar navaja en el cuello porque tengo piel sensible"}). La voz se convierte a texto automáticamente y se escribe en la caja.
+    \item \textbf{Utilidad en la barbería:} Facilita que clientes que van manejando o con prisa dejen notas claras para el barbero sin tener que escribir todo en el teclado.
+    \item \textbf{Librería en Flutter:} Paquete \texttt{speech\_to\_text} (utiliza el motor de reconocimiento de voz nativo de Google/Apple).
+    \item \textbf{Tiempo estimado:} 3 a 4 días.
+\end{itemize}
+
+% -------------------------------------------------------------------------
+\subsection{Lector de Huella / Face Unlock (Biometría)}
+% -------------------------------------------------------------------------
+
+\begin{itemize}
+    \item \textbf{¿Qué hace?:} Permite al usuario iniciar sesión en la app o confirmar una cita simplemente tocando el sensor de huella dactilar de su teléfono o usando el reconocimiento facial.
+    \item \textbf{Utilidad en la barbería:} Mayor comodidad: el cliente no tiene que estar escribiendo su correo y contraseña cada vez que abre la app.
+    \item \textbf{Librería en Flutter:} Paquete oficial \texttt{local\_auth} de Flutter (se implementa con menos de 40 líneas de código).
+    \item \textbf{Tiempo estimado:} 2 días.
+\end{itemize}
+
+% -------------------------------------------------------------------------
+\subsection{Motor de Vibración (Retroalimentación Háptica)}
+% -------------------------------------------------------------------------
+
+\begin{itemize}
+    \item \textbf{¿Qué hace?:} Genera una vibración física sutil pero clara en el celular:
+    \begin{itemize}
+        \item Un pequeño \textit{"clic"} al seleccionar el barbero y la hora de la cita.
+        \item Una vibración de confirmación exitosa cuando se reserva el turno.
+        \item Una alerta vibratoria cuando faltan 15 minutos para la cita.
+    \end{itemize}
+    \item \textbf{Librería en Flutter:} No requiere paquetes externos, se utiliza la clase nativa \texttt{HapticFeedback} de Flutter (\texttt{HapticFeedback.lightImpact()}).
+    \item \textbf{Tiempo estimado:} 1 día.
+\end{itemize}
+
+\newpage
+% =========================================================================
+\section{¿En Qué se Relacionan Estas Mejoras con el Firmware del Teléfono?}
+% =========================================================================
+
+\begin{conceptbox}{¿Qué es el Firmware del Teléfono de Forma Sencilla?}
+El \textbf{firmware} es el software interno de bajo nivel que viene grabado de fábrica en los microchips del teléfono. Es el encargado de controlar físicamente la lente de la cámara, encender la antena del GPS, activar el micrófono, leer el sensor de huella y apagar cosas para ahorrar batería. 
+
+Tu aplicación de Flutter no toca el lente ni la antena directamente: le pide permiso al sistema operativo (Android), y el sistema le da la orden al \textbf{firmware} del chip.
+\end{conceptbox}
+
+\vspace{0.3cm}
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[
+    node distance=1.1cm,
+    box/.style={rectangle, draw=primaryDark, fill=codeBg, text width=11cm, text centered, rounded corners, minimum height=0.75cm, font=\small\bfseries},
+    arrow/.style={-{Stealth[length=2.5mm]}, thick, color=accentGold}
+]
+    \node (app) [box, fill=accentGold!25, draw=accentGold] {Tu Aplicación en Flutter (\texttt{phone\_app})};
+    \node (os) [box, below of=app] {Sistema Operativo (Android Framework y Permisos de Usuario)};
+    \node (driver) [box, below of=os] {Controladores / Drivers (Cámara, Audio, Ubicación)};
+    \node (fw) [box, fill=primaryDark!20, draw=primaryDark, below of=driver] {FIRMWARE del Chip (SoC Snapdragon / MediaTek, Chip GPS, Chip de Huella)};
+    
+    \draw [arrow] (app) -- (os);
+    \draw [arrow] (os) -- (driver);
+    \draw [arrow] (driver) -- (fw);
+\end{tikzpicture}
+\caption{Camino desde el código en Flutter hasta el firmware físico del teléfono.}
+\end{figure}
+
+Las mejoras propuestas se relacionan directamente con el firmware en cuatro puntos fundamentales:
+
+% -------------------------------------------------------------------------
+\subsection{Gestión de Batería y Suspensión (Doze Mode y el Chip de Energía)}
+% -------------------------------------------------------------------------
+
+\begin{firmwarebox}{¿Cómo se relaciona el GPS con el Firmware?}
+El chip de ubicación (GPS) gasta muchísima batería. Por eso, el firmware del procesador y del chip de energía (\textit{PMIC}) apagan la antena GPS apenas la pantalla del teléfono se bloquea.
+\end{firmwarebox}
+
+\begin{itemize}
+    \item \textbf{Por qué es importante en la app:} Si intentáramos rastrear al cliente segundo a segundo por la calle, el firmware del teléfono detectaría un gasto excesivo y cerraría nuestra app a la fuerza (esto pasa mucho en teléfonos Xiaomi, Samsung y Huawei).
+    \item \textbf{La solución práctica que usaremos:} La app solo pedirá la ubicación \textbf{una sola vez} cuando el usuario abre la pantalla de la cita para calcular la distancia a la barbería (\textit{lectura bajo demanda}). Al hacerlo así, el firmware enciende la antena medio segundo, nos da las coordenadas y vuelve a hibernar, gastando casi cero batería.
+\end{itemize}
+
+% -------------------------------------------------------------------------
+\subsection{Seguridad de la Huella en el Chip (TEE / Enclave Seguro)}
+% -------------------------------------------------------------------------
+
+\begin{firmwarebox}{¿Por qué la huella dactilar depende del Firmware?}
+Cuando el usuario pone su dedo en el lector, la imagen de la huella \textbf{NUNCA} viaja a nuestra app ni se guarda en la base de datos de la barbería.
+\end{firmwarebox}
+
+\begin{itemize}
+    \item El sensor físico de huella está conectado a una zona aislada del procesador llamada \textbf{TEE (Trusted Execution Environment)} controlada por un firmware de seguridad independiente.
+    \item Este firmware compara el dedo físicamente y solo le responde a Flutter con un mensaje seguro: \textit{"Autenticación Correcta: Sí o No"}.
+    \item \textbf{Beneficio:} El cliente tiene la garantía absoluta de que la app de la barbería no puede robar su huella dactilar ni sus datos biométricos.
+
+\end{itemize}
+
+% -------------------------------------------------------------------------
+\subsection{Control de la Cámara y el ISP (Procesador de Imagen)}
+% -------------------------------------------------------------------------
+
+\begin{itemize}
+    \item Al abrir la cámara para escanear el código QR en la barbería, el paquete \texttt{mobile\_scanner} se comunica con el firmware del sensor de la cámara y del \textbf{ISP (Image Signal Processor)}.
+    \item El firmware del ISP es el que se encarga del \textbf{enfoque automático (Auto-Focus)} y de la compensación de luz en la sala de espera. Si la barbería tiene luces tenues o de noche, el firmware ajusta la exposición en milisegundos para que el código QR se pueda leer sin fallar.
+\end{itemize}
+
+% -------------------------------------------------------------------------
+\subsection{Micrófono y Cancelación de Ruido en Hardware}
+% -------------------------------------------------------------------------
+
+\begin{itemize}
+    \item Al dictar las notas de la cita, el micrófono se apoya en el firmware del chip de audio (\textbf{DSP de audio}).
+    \item Los teléfonos actuales tienen 2 o 3 micrófonos físicos. El firmware del DSP resta el ruido del tráfico o la música ambiental y aísla la voz del usuario, permitiendo que la conversión de voz a texto en la app sea precisa incluso si el cliente está en la calle caminando hacia la barbería.
+\end{itemize}
+
+\newpage
+% =========================================================================
+\section{Plan de Trabajo Realista para 1 Mes (4 Semanas)}
+% =========================================================================
+
+Este cronograma está diseñado para que una sola persona pueda programar y probar todas las funciones paso a paso:
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{c l p{7cm} c}
+\toprule
+\textbf{Semana} & \textbf{Módulo} & \textbf{Tareas Concretas a Realizar} & \textbf{Dificultad} \\
+\midrule
+\textbf{Semana 1} & \textbf{Biometría y Foto} & 
+- Integrar \texttt{local\_auth} para inicio con huella.\newline
+- Agregar botón de foto de referencia con \texttt{image\_picker}. & Fácil \\[0.5cm]
+
+\textbf{Semana 2} & \textbf{Lector QR y Vibración} & 
+- Pantalla para escanear QR del local con \texttt{mobile\_scanner}.\newline
+- Enviar evento al backend para que la Smart TV marque la cita.\newline
+- Agregar \texttt{HapticFeedback} al confirmar citas. & Media \\[0.5cm]
+
+\textbf{Semana 3} & \textbf{GPS y Navegación} & 
+- Obtener ubicación con \texttt{geolocator}.\newline
+- Calcular distancia en kilómetros hacia la barbería.\newline
+- Botón "Abrir en Google Maps" con \texttt{url\_launcher}. & Fácil \\[0.5cm]
+
+\textbf{Semana 4} & \textbf{Voz y Pruebas} & 
+- Agregar dictado por voz con \texttt{speech\_to\_text}.\newline
+- Pruebas de integración completa (Celular + TV + Reloj).\newline
+- Corrección de errores y entrega final. & Media \\
+\bottomrule
+\end{tabularx}
+\caption{Cronograma de implementación dividido en sprints semanales.}
+\end{table}
+
+% =========================================================================
+\section{Conclusiones}
+% =========================================================================
+
+Al descartar elementos innecesarios como mallas 3D y realidad aumentada compleja, el proyecto se vuelve **100\% alcanzable en 4 semanas** y gana valor práctico inmediato:
+\begin{enumerate}
+    \item Los clientes pueden identificarse rápido con su huella y dictar cómo quieren su corte sin perder tiempo escribiendo.
+    \item La cámara y el GPS resuelven la llegada al local: el usuario sabe a qué distancia está, puede abrir el mapa y al entrar solo escanea un código QR para que su nombre aparezca en la Smart TV.
+    \item Técnicamente, el proyecto demuestra cómo Flutter aprovecha el hardware físico a través de permisos nativos y respeta las restricciones del **firmware** (ahorro de batería, seguridad en chips aislados y procesamiento de imagen y audio).
+\end{enumerate}
+
+\end{document}

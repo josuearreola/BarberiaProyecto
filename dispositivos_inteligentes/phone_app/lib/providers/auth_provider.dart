@@ -25,8 +25,8 @@ class AuthProvider with ChangeNotifier {
         'password': password,
       });
 
-      print('Login Status Code: ${response.statusCode}');
-      print('Login Response Body: ${response.body}');
+      // REGLA 6: Evitar imprimir contraseñas, tokens u otros datos confidenciales en Logcat
+      debugPrint('Auth: Intento de inicio de sesión procesado con código de estado: ${response.statusCode}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
@@ -47,7 +47,8 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      print('Login Exception: $e');
+      // REGLA 6: Evitar volcado de excepciones técnicas con información interna sensible
+      debugPrint('Auth: Ocurrió un error seguro durante la autenticación.');
       _isLoading = false;
       notifyListeners();
       return false;
@@ -75,8 +76,8 @@ class AuthProvider with ChangeNotifier {
         'password': password,
       });
 
-      print('Register Status Code: ${response.statusCode}');
-      print('Register Response Body: ${response.body}');
+      // REGLA 6: Evitar imprimir contraseñas, tokens u otros datos confidenciales en Logcat
+      debugPrint('Auth: Intento de registro procesado con código de estado: ${response.statusCode}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         _isLoading = false;
@@ -88,7 +89,8 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      print('Register Exception: $e');
+      // REGLA 6: Evitar volcado de excepciones técnicas con información interna sensible
+      debugPrint('Auth: Ocurrió un error seguro durante el registro.');
       _isLoading = false;
       notifyListeners();
       return false;

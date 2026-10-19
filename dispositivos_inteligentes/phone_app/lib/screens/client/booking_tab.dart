@@ -1,9 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/client_provider.dart';
+import '../../widgets/voice_note_recorder.dart';
 
 class BookingTab extends StatefulWidget {
   const BookingTab({super.key});
@@ -14,11 +16,14 @@ class BookingTab extends StatefulWidget {
 
 class _BookingTabState extends State<BookingTab> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
-  late TextEditingController _notesController;
-  
+
+  String? _audioFilePath;
+  Key _voiceRecorderKey = UniqueKey();
+  bool _isSubmitting = false;
+
   String _selectedService = 'Corte Clásico';
   DateTime _selectedDate = DateTime.now();
   String _selectedTime = '10:00';
@@ -43,14 +48,12 @@ class _BookingTabState extends State<BookingTab> {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     _nameController = TextEditingController(text: auth.user?.usuario ?? '');
     _phoneController = TextEditingController(text: auth.user?.telefono ?? '');
-    _notesController = TextEditingController();
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
-    _notesController.dispose();
     super.dispose();
   }
 
@@ -83,11 +86,73 @@ class _BookingTabState extends State<BookingTab> {
 
   void _submitAppointment() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isSubmitting = true;
+      });
+
       final clientProvider = Provider.of<ClientProvider>(context, listen: false);
       final auth = Provider.of<AuthProvider>(context, listen: false);
-      
       final formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
-      
+
+      String? audioFinalUrl;
+
+      // 1. Si el cliente grabó nota de voz, la subimos usando la URL preasignada
+      if (_audioFilePath != null && _audioFilePath!.isNotEmpty) {
+        final audioFile = File(_audioFilePath!);
+        if (await audioFile.exists()) {
+          try {
+            final audioBytes = await audioFile.readAsBytes();
+
+            // Solicitar URL preasignada al backend
+            final presignedData = await clientProvider.getAudioPresignedUrl(
+              fileName: 'nota_cita_${DateTime.now().millisecondsSinceEpoch}.m4a',
+            );
+
+            if (presignedData != null && presignedData['uploadUrl'] != null) {
+              final uploadSuccess = await clientProvider.uploadAudioToPresignedUrl(
+                presignedData['uploadUrl'],
+                audioBytes,
+              );
+
+              if (uploadSuccess) {
+                audioFinalUrl = presignedData['fileUrl'];
+              } else {
+                setState(() => _isSubmitting = false);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Error al subir la nota de voz. Inténtalo de nuevo.'),
+                    backgroundColor: AppColors.rojo,
+                  ),
+                );
+                return;
+              }
+            } else {
+              setState(() => _isSubmitting = false);
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Error al autorizar la subida de la nota de voz.'),
+                  backgroundColor: AppColors.rojo,
+                ),
+              );
+              return;
+            }
+          } catch (e) {
+            setState(() => _isSubmitting = false);
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error procesando audio: $e'),
+                backgroundColor: AppColors.rojo,
+              ),
+            );
+            return;
+          }
+        }
+      }
+
+      // 2. Crear la cita guardando la URL del audio en el campo notas
       final success = await clientProvider.createAppointment(
         nombreCompleto: _nameController.text.trim(),
         telefono: _phoneController.text.trim(),
@@ -95,9 +160,13 @@ class _BookingTabState extends State<BookingTab> {
         servicio: _selectedService,
         fechaCita: formattedDate,
         horaCita: _selectedTime,
-        notas: _notesController.text.trim(),
+        notas: audioFinalUrl,
       );
-      
+
+      setState(() {
+        _isSubmitting = false;
+      });
+
       if (success) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -106,7 +175,10 @@ class _BookingTabState extends State<BookingTab> {
             backgroundColor: AppColors.verdeExito,
           ),
         );
-        _notesController.clear();
+        setState(() {
+          _audioFilePath = null;
+          _voiceRecorderKey = UniqueKey();
+        });
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -122,6 +194,7 @@ class _BookingTabState extends State<BookingTab> {
   @override
   Widget build(BuildContext context) {
     final clientProvider = Provider.of<ClientProvider>(context);
+    final isBusy = _isSubmitting || clientProvider.isLoading;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -139,7 +212,7 @@ class _BookingTabState extends State<BookingTab> {
               ),
             ),
             const SizedBox(height: 20),
-            
+
             // Servicio
             const Text('Servicio', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
@@ -172,7 +245,7 @@ class _BookingTabState extends State<BookingTab> {
               ),
             ),
             const SizedBox(height: 20),
-            
+
             // Fecha
             const Text('Fecha', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
@@ -198,7 +271,7 @@ class _BookingTabState extends State<BookingTab> {
               ),
             ),
             const SizedBox(height: 20),
-            
+
             // Hora
             const Text('Hora', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
@@ -233,7 +306,7 @@ class _BookingTabState extends State<BookingTab> {
               }).toList(),
             ),
             const SizedBox(height: 20),
-            
+
             // Datos Personales
             const Text('Tus Datos', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
@@ -251,32 +324,46 @@ class _BookingTabState extends State<BookingTab> {
               decoration: _buildInputDecoration('Teléfono', Icons.phone),
               validator: (val) => val == null || val.isEmpty ? 'Requerido' : null,
             ),
-            const SizedBox(height: 15),
-            TextFormField(
-              controller: _notesController,
-              style: const TextStyle(color: Colors.white),
-              decoration: _buildInputDecoration('Notas (opcional)', Icons.note),
-              maxLines: 2,
+            const SizedBox(height: 20),
+
+            // Apartado de Nota de Voz (reemplaza el cuadro de texto)
+            VoiceNoteRecorder(
+              key: _voiceRecorderKey,
+              onAudioChanged: (path) {
+                setState(() {
+                  _audioFilePath = path;
+                });
+              },
             ),
             const SizedBox(height: 30),
-            
-            // Boton Agendar
+
+            // Botón Agendar
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 52,
               child: ElevatedButton(
-                onPressed: clientProvider.isLoading ? null : _submitAppointment,
+                onPressed: isBusy ? null : _submitAppointment,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.amarillo,
                   foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   elevation: 5,
                 ),
-                child: clientProvider.isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2),
+                child: isBusy
+                    ? const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2),
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            'Procesando Cita...',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                          ),
+                        ],
                       )
                     : const Text(
                         'Confirmar Cita',

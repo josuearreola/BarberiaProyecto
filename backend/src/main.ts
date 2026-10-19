@@ -1,6 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import express from 'express';
 import type { Express } from 'express';
+import * as path from 'path';
+import * as fs from 'fs';
 import session from 'express-session';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
@@ -31,7 +34,24 @@ async function bootstrap() {
   const expressApp = app.getHttpAdapter().getInstance() as Express;
   expressApp.set('trust proxy', 1);
 
-  app.use(helmet());
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
+
+  // Parser para archivos binarios de audio subidos mediante PUT con URL preasignada
+  expressApp.use(
+    '/api/appointments/upload-audio',
+    express.raw({ type: '*/*', limit: '25mb' }),
+  );
+
+  // Servir archivos estáticos subidos (/uploads)
+  const uploadsDir = path.join(process.cwd(), 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  expressApp.use('/uploads', express.static(uploadsDir));
 
   app.use(
     session({
