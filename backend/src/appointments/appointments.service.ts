@@ -59,6 +59,14 @@ export class AppointmentsService {
       throw new ConflictException('La hora seleccionada ya esta ocupada');
     }
 
+    // Normalizar 'notas': Guardar siempre la ruta relativa (ej: uploads/audio/audio_123.m4a)
+    if (createAppointmentDto.notas) {
+      const match = createAppointmentDto.notas.match(/uploads\/audio\/[^?#\s]+/);
+      if (match) {
+        createAppointmentDto.notas = match[0];
+      }
+    }
+
     const appointment =
       this.appointmentsRepository.create(createAppointmentDto);
     const saved = await this.appointmentsRepository.save(appointment);
@@ -243,6 +251,13 @@ export class AppointmentsService {
       }
     }
 
+    if (updateAppointmentDto.notas) {
+      const match = updateAppointmentDto.notas.match(/uploads\/audio\/[^?#\s]+/);
+      if (match) {
+        updateAppointmentDto.notas = match[0];
+      }
+    }
+
     Object.assign(appointment, updateAppointmentDto);
     return await this.appointmentsRepository.save(appointment);
   }
@@ -268,12 +283,15 @@ export class AppointmentsService {
     // uploadUrl es la URL preasignada a donde la app móvil subirá el audio con PUT
     const uploadUrl = `${cleanBaseUrl}/api/appointments/upload-audio?fileName=${encodeURIComponent(uniqueName)}&expires=${expires}&signature=${signature}`;
     
-    // fileUrl es la URL final donde queda alojado el audio para guardarlo en 'notas'
+    // fileUrl es la URL absoluta para reproducción directa
     const fileUrl = `${cleanBaseUrl}/uploads/audio/${uniqueName}`;
+    // relativePath es la ruta relativa recomendada para almacenar en la BD
+    const relativePath = `uploads/audio/${uniqueName}`;
 
     return {
       uploadUrl,
       fileUrl,
+      relativePath,
       fileName: uniqueName,
       expires,
     };

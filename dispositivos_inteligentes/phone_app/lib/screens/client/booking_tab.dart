@@ -115,7 +115,7 @@ class _BookingTabState extends State<BookingTab> {
               );
 
               if (uploadSuccess) {
-                audioFinalUrl = presignedData['fileUrl'];
+                audioFinalUrl = presignedData['relativePath'] ?? presignedData['fileUrl'];
               } else {
                 setState(() => _isSubmitting = false);
                 if (!mounted) return;
