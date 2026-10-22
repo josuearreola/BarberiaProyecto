@@ -26,20 +26,13 @@ class _BookingTabState extends State<BookingTab> {
 
   String _selectedService = 'Corte Clásico';
   DateTime _selectedDate = DateTime.now();
-  String _selectedTime = '10:00';
+  TimeOfDay _selectedTime = const TimeOfDay(hour: 10, minute: 0);
 
   final List<String> _services = [
     'Corte Clásico',
     'Perfilado de Barba',
     'Paquete Completo',
     'Tinte / Decoloración',
-  ];
-
-  final List<String> _availableTimes = [
-    '10:00', '10:30', '11:00', '11:30',
-    '12:00', '12:30', '13:00', '13:30',
-    '15:00', '15:30', '16:00', '16:30',
-    '17:00', '17:30', '18:00', '18:30'
   ];
 
   @override
@@ -80,6 +73,46 @@ class _BookingTabState extends State<BookingTab> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
+      });
+    }
+  }
+
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: AppColors.amarillo,
+              onPrimary: Colors.black,
+              surface: AppColors.azulOscuro,
+              onSurface: Colors.white,
+            ),
+            timePickerTheme: TimePickerThemeData(
+              dialBackgroundColor: Colors.black38,
+              dialHandColor: AppColors.amarillo,
+              dialTextColor: Colors.white,
+              entryModeIconColor: AppColors.amarillo,
+              hourMinuteTextColor: WidgetStateColor.resolveWith((states) =>
+                  states.contains(WidgetState.selected)
+                      ? AppColors.amarillo
+                      : Colors.white),
+              hourMinuteColor: WidgetStateColor.resolveWith((states) =>
+                  states.contains(WidgetState.selected)
+                      ? AppColors.amarillo.withValues(alpha: 0.2)
+                      : Colors.black26),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && picked != _selectedTime) {
+      setState(() {
+        _selectedTime = picked;
       });
     }
   }
@@ -159,7 +192,7 @@ class _BookingTabState extends State<BookingTab> {
         correo: auth.user?.email ?? '',
         servicio: _selectedService,
         fechaCita: formattedDate,
-        horaCita: _selectedTime,
+        horaCita: '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
         notas: audioFinalUrl,
       );
 
@@ -183,8 +216,23 @@ class _BookingTabState extends State<BookingTab> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(clientProvider.error),
+            content: Row(
+              children: [
+                const Icon(Icons.access_time_filled_rounded, color: Colors.white, size: 22),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    clientProvider.error,
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
             backgroundColor: AppColors.rojo,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -272,38 +320,29 @@ class _BookingTabState extends State<BookingTab> {
             ),
             const SizedBox(height: 20),
 
-            // Hora
+            // Hora con selector tipo reloj
             const Text('Hora', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: _availableTimes.map((time) {
-                final isSelected = _selectedTime == time;
-                return ChoiceChip(
-                  label: Text(time),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) {
-                      setState(() {
-                        _selectedTime = time;
-                      });
-                    }
-                  },
-                  backgroundColor: AppColors.azulOscuro,
-                  selectedColor: AppColors.amarillo,
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.black : Colors.white,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: BorderSide(
-                      color: isSelected ? AppColors.amarillo : Colors.white24,
+            InkWell(
+              onTap: () => _selectTime(context),
+              child: Container(
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: AppColors.azulOscuro,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _selectedTime.format(context),
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
                     ),
-                  ),
-                );
-              }).toList(),
+                    const Icon(Icons.access_time_rounded, color: AppColors.amarillo),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 20),
 

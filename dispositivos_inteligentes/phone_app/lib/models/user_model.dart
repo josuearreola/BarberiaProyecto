@@ -25,4 +25,15 @@ class UserModel {
       estado: json['estado'] ?? 'activo',
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'usuario': usuario,
+      'email': email,
+      'telefono': telefono,
+      'role': role,
+      'estado': estado,
+    };
+  }
 }

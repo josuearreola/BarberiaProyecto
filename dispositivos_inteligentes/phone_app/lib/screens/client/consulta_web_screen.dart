@@ -663,133 +663,87 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
                 ),
               )
 
-            // RF04: La información obtenida deberá mostrarse en pantalla.
+            // RF04: La información obtenida deberá mostrarse en pantalla (Página Web).
             else if (_responseBody != null)
-              DefaultTabController(
-                length: 3,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.azulOscuro,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.amarillo.withOpacity(0.4)),
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.amarillo.withOpacity(0.1),
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.check_circle_rounded, color: Colors.greenAccent, size: 22),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Código de respuesta: ${_statusCode ?? 200} OK',
-                                style: const TextStyle(
-                                  color: Colors.greenAccent,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.black45,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                '${(_responseBody!.length / 1024).toStringAsFixed(1)} KB',
-                                style: const TextStyle(color: AppColors.amarillo, fontSize: 11),
-                              ),
-                            ),
-                          ],
-                        ),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.azulOscuro,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.amarillo.withValues(alpha: 0.4)),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.amarillo.withValues(alpha: 0.1),
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                       ),
-                      const TabBar(
-                        indicatorColor: AppColors.amarillo,
-                        labelColor: AppColors.amarillo,
-                        unselectedLabelColor: Colors.white60,
-                        isScrollable: false,
-                        tabs: [
-                          Tab(icon: Icon(Icons.web, size: 18), text: 'Página Web'),
-                          Tab(icon: Icon(Icons.article_outlined, size: 18), text: 'Vista Texto'),
-                          Tab(icon: Icon(Icons.code, size: 18), text: 'Código HTML'),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle_rounded, color: Colors.greenAccent, size: 22),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Código de respuesta: ${_statusCode ?? 200} OK',
+                              style: const TextStyle(
+                                color: Colors.greenAccent,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.black45,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              '${(_responseBody!.length / 1024).toStringAsFixed(1)} KB',
+                              style: const TextStyle(color: AppColors.amarillo, fontSize: 11),
+                            ),
+                          ),
                         ],
                       ),
-                      SizedBox(
-                        height: 520,
-                        child: TabBarView(
-                          children: [
-                            // Pestaña 1: Renderizado visual del contenido de la página web
-                            ClipRRect(
-                              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
-                              child: kIsWeb && _iframeViewType != null
-                                  ? buildIframeWidget(_iframeViewType!)
-                                  : _buildVisualPageReader(
-                                      urlText,
-                                      pageTitle,
-                                      pageDescription,
-                                      pageImage,
-                                      textContent,
-                                    ),
-                            ),
-
-                            // Pestaña 2: Texto limpio extraído del sitio web
-                            Padding(
-                              padding: const EdgeInsets.all(14.0),
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (pageTitle.isNotEmpty) ...[
-                                      Text(
-                                        pageTitle,
-                                        style: const TextStyle(
-                                          color: AppColors.amarillo,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const Divider(color: Colors.white24, height: 20),
-                                    ],
-                                    Text(
-                                      textContent.isNotEmpty
-                                          ? textContent
-                                          : 'Sin contenido de texto disponible.',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 13,
-                                        height: 1.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-
-                            // Pestaña 3: HTML crudo de la respuesta
-                            Padding(
-                              padding: const EdgeInsets.all(14.0),
-                              child: SingleChildScrollView(
-                                child: SelectableText(
-                                  _responseBody!,
-                                  style: const TextStyle(
-                                    fontFamily: 'monospace',
-                                    color: Colors.lightGreenAccent,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: const BoxDecoration(
+                        border: Border(bottom: BorderSide(color: Colors.white12)),
                       ),
-                    ],
-                  ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.web, color: AppColors.amarillo, size: 18),
+                          SizedBox(width: 8),
+                          Text(
+                            'Página Web',
+                            style: TextStyle(
+                              color: AppColors.amarillo,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Renderizado visual del contenido de la página web
+                    SizedBox(
+                      height: 520,
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+                        child: kIsWeb && _iframeViewType != null
+                            ? buildIframeWidget(_iframeViewType!)
+                            : _buildVisualPageReader(
+                                urlText,
+                                pageTitle,
+                                pageDescription,
+                                pageImage,
+                                textContent,
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
               )
 
@@ -798,7 +752,7 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
               Container(
                 padding: const EdgeInsets.all(30),
                 decoration: BoxDecoration(
-                  color: AppColors.azulOscuro.withOpacity(0.5),
+                  color: AppColors.azulOscuro.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.white10),
                 ),
@@ -814,68 +768,8 @@ class _ConsultaWebScreenState extends State<ConsultaWebScreen> {
                   ],
                 ),
               ),
-
-            const SizedBox(height: 30),
-
-            // Guía de Pruebas de la Práctica 3
-            Card(
-              color: Colors.black26,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: AppColors.amarillo.withOpacity(0.2)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(14.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '📋 Guía de Pruebas de la Práctica 3:',
-                      style: TextStyle(
-                        color: AppColors.amarillo,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildTestItem('Prueba 1 — Con conexión',
-                        'Presione CONSULTAR con Wi-Fi/Datos activos para cargar el contenido de la URL.'),
-                    _buildTestItem('Prueba 2 — Sin conexión',
-                        'Active el switch "Simular modo sin conexión" o desactive internet y presione CONSULTAR para verificar el mensaje de error.'),
-                    _buildTestItem('Prueba 3 — Modificación de la URL',
-                        'Edite la URL en el campo superior e intente realizar la consulta a otra dirección.'),
-                  ],
-                ),
-              ),
-            ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTestItem(String title, String description) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.arrow_right_rounded, color: AppColors.amarillo, size: 20),
-          Expanded(
-            child: RichText(
-              text: TextSpan(
-                style: const TextStyle(fontSize: 12, color: Colors.white70),
-                children: [
-                  TextSpan(
-                    text: '$title: ',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  TextSpan(text: description),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

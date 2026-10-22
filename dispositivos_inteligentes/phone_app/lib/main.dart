@@ -9,6 +9,7 @@ import 'package:phone_app/providers/admin_provider.dart';
 import 'package:phone_app/screens/client/client_main_screen.dart';
 import 'package:phone_app/providers/client_provider.dart';
 import 'package:phone_app/providers/ble_provider.dart';
+import 'package:phone_app/providers/notification_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:phone_app/screens/client/consulta_web_screen.dart';
@@ -23,6 +24,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AdminProvider()),
         ChangeNotifierProvider(create: (_) => ClientProvider()),
         ChangeNotifierProvider(create: (_) => BleProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: const BarberiaApp(),
     ),

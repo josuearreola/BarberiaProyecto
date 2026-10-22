@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../models/appointment_model.dart';
 import '../models/user_model.dart';
 import '../services/api_service.dart';
@@ -64,6 +65,21 @@ class AdminProvider with ChangeNotifier {
       if (resp.statusCode == 200 || resp.statusCode == 201) {
         print('✅ CITA ACTUALIZADA CON EXITO');
         await fetchDashboardData();
+
+        try {
+          String sUrl = ApiService.baseUrl.trim();
+          if (sUrl.endsWith('/api')) sUrl = sUrl.substring(0, sUrl.length - 4);
+          final IO.Socket socket = IO.io(sUrl, <String, dynamic>{
+            'transports': ['websocket'],
+            'autoConnect': true,
+          });
+          socket.emit('sync_appointment', {
+            'id': id,
+            'estado': newStatus,
+            'nombreBarbero': nombreBarbero ?? 'Barbero',
+          });
+          Future.delayed(const Duration(seconds: 1), () => socket.dispose());
+        } catch (_) {}
       } else {
         print('❌ ERROR ACTUALIZANDO CITA. Codigo: ${resp.statusCode}');
       }

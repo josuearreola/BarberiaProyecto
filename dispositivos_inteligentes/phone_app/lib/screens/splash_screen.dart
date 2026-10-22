@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'auth/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -10,8 +11,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final _storage = const FlutterSecureStorage();
-
   @override
   void initState() {
     super.initState();
@@ -20,14 +19,16 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkAuth() async {
     // Simula tiempo de carga visual para que se vea el logo
-    await Future.delayed(const Duration(seconds: 2));
-    
-    final token = await _storage.read(key: 'jwt_token');
-    final role = await _storage.read(key: 'user_role') ?? 'cliente';
+    await Future.delayed(const Duration(seconds: 1));
+    if (!mounted) return;
+
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final hasSession = await auth.tryAutoLogin();
 
     if (!mounted) return;
 
-    if (token != null) {
+    if (hasSession && auth.isAuthenticated) {
+      final role = auth.user?.role ?? 'cliente';
       if (role == 'admin' || role == 'administrador') {
         Navigator.of(context).pushReplacementNamed('/admin');
       } else {

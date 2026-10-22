@@ -37,4 +37,19 @@ class AppointmentModel {
       nombreBarbero: json['nombreBarbero'] ?? json['nombre_barbero'],
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'nombreCompleto': nombreCompleto,
+      'telefono': telefono,
+      'correo': correo,
+      'servicio': servicio,
+      'fechaCita': fechaCita,
+      'horaCita': horaCita,
+      'estado': estado,
+      'notas': notas,
+      'nombreBarbero': nombreBarbero,
+    };
+  }
 }

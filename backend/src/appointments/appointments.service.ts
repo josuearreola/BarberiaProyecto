@@ -132,6 +132,18 @@ export class AppointmentsService {
       this.barberGateway.server.emit('cancel_appointment_broadcast', {
         id: saved.id
       });
+      this.barberGateway.server.emit('appointment_status_changed', {
+        id: saved.id,
+        correo: saved.correo,
+        telefono: saved.telefono,
+        nombreCompleto: saved.nombreCompleto,
+        servicio: saved.servicio,
+        fechaCita: saved.fechaCita,
+        horaCita: saved.horaCita,
+        anteriorEstado: AppointmentStatus.Pendiente,
+        estado: saved.estado,
+        nombreBarbero: saved.nombreBarbero || 'Sin asignar',
+      });
     }
     
     return saved;
@@ -221,11 +233,29 @@ export class AppointmentsService {
 
   async updateStatus(id: number, estado: string, nombreBarbero?: string): Promise<Appointment> {
     const appointment = await this.findOne(id);
+    const anteriorEstado = appointment.estado;
     appointment.estado = estado;
     if (nombreBarbero) {
       appointment.nombreBarbero = nombreBarbero;
     }
-    return await this.appointmentsRepository.save(appointment);
+    const saved = await this.appointmentsRepository.save(appointment);
+
+    if (this.barberGateway && this.barberGateway.server) {
+      this.barberGateway.server.emit('appointment_status_changed', {
+        id: saved.id,
+        correo: saved.correo,
+        telefono: saved.telefono,
+        nombreCompleto: saved.nombreCompleto,
+        servicio: saved.servicio,
+        fechaCita: saved.fechaCita,
+        horaCita: saved.horaCita,
+        anteriorEstado,
+        estado: saved.estado,
+        nombreBarbero: saved.nombreBarbero || 'Sin asignar',
+      });
+    }
+
+    return saved;
   }
 
   async update(
@@ -258,8 +288,26 @@ export class AppointmentsService {
       }
     }
 
+    const anteriorEstado = appointment.estado;
     Object.assign(appointment, updateAppointmentDto);
-    return await this.appointmentsRepository.save(appointment);
+    const saved = await this.appointmentsRepository.save(appointment);
+
+    if (this.barberGateway && this.barberGateway.server && anteriorEstado !== saved.estado) {
+      this.barberGateway.server.emit('appointment_status_changed', {
+        id: saved.id,
+        correo: saved.correo,
+        telefono: saved.telefono,
+        nombreCompleto: saved.nombreCompleto,
+        servicio: saved.servicio,
+        fechaCita: saved.fechaCita,
+        horaCita: saved.horaCita,
+        anteriorEstado,
+        estado: saved.estado,
+        nombreBarbero: saved.nombreBarbero || 'Sin asignar',
+      });
+    }
+
+    return saved;
   }
 
   async remove(id: number): Promise<void> {
