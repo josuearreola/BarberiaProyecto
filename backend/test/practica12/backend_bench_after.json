@@ -1,0 +1,27 @@
+{
+  "phase": "after",
+  "readLoad200": {
+    "totalReqs": 200,
+    "concurrency": 25,
+    "wallMs": 274.27,
+    "rps": 729.21,
+    "avgMs": 32.63,
+    "p95Ms": 88.81,
+    "errors": 0,
+    "errorPct": 0,
+    "avgPayloadBytes": 11027,
+    "dbSelectCalls": 25,
+    "cpuPct": 142.56,
+    "ramMb": 178.45
+  },
+  "filteredQuery15": {
+    "avgMs": 15.71,
+    "avgPayloadBytes": 5461
+  },
+  "idempotentWriteRetry": {
+    "attempt1Status": 201,
+    "attempt2Status": 201,
+    "dbInsertsExecuted": 1,
+    "safeRetrySucceeded": true
+  }
+}

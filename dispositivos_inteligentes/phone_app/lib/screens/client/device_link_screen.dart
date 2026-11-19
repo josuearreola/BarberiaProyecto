@@ -124,7 +124,9 @@ class _DeviceLinkScreenState extends State<DeviceLinkScreen> {
                       );
                       // Ignorar si ya pasó hace más de 5 minutos
                       if (targetUtc.isBefore(nowUtc.subtract(const Duration(minutes: 5)))) return false;
-                    } catch (e) {}
+                    } catch (e) {
+                      debugPrint('Error al analizar fecha de cita próxima: $e');
+                    }
                     return true;
                   }).toList();
 

@@ -80,7 +80,6 @@ class CustomButton extends StatelessWidget {
         break;
 
       case CustomButtonState.normal:
-      default:
         backgroundColor = isSecondary ? AppColors.azulOscuro : AppColors.amarillo;
         textColor = isSecondary ? AppColors.blanco : AppColors.negro;
         content = icon != null 

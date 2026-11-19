@@ -1,0 +1,307 @@
+{
+  "executedAt": "2026-11-12T02:05:28.035Z",
+  "environment": {
+    "apiBase": "https://barberiaproyecto-f2wb.onrender.com/api",
+    "webUrl": "https://barberia-proyecto-nine.vercel.app",
+    "runtime": "Node v20.20.2"
+  },
+  "fase3": {
+    "webWaves": [
+      {
+        "target": "https://barberia-proyecto-nine.vercel.app",
+        "concurrency": 5,
+        "totalReqs": 15,
+        "totalElapsedMs": 631.08,
+        "rps": 23.77,
+        "minMs": 86.83,
+        "avgMs": 197.12,
+        "p90Ms": 324.15,
+        "p95Ms": 327.72,
+        "maxMs": 327.72,
+        "errors": 0,
+        "errorPct": 0,
+        "statusCodes": {
+          "200": 15
+        },
+        "avgBytes": 1260
+      },
+      {
+        "target": "https://barberia-proyecto-nine.vercel.app",
+        "concurrency": 15,
+        "totalReqs": 45,
+        "totalElapsedMs": 835.39,
+        "rps": 53.87,
+        "minMs": 76.47,
+        "avgMs": 229.07,
+        "p90Ms": 432,
+        "p95Ms": 616.14,
+        "maxMs": 619.24,
+        "errors": 0,
+        "errorPct": 0,
+        "statusCodes": {
+          "200": 45
+        },
+        "avgBytes": 1260
+      },
+      {
+        "target": "https://barberia-proyecto-nine.vercel.app",
+        "concurrency": 30,
+        "totalReqs": 60,
+        "totalElapsedMs": 1572.52,
+        "rps": 38.16,
+        "minMs": 77.19,
+        "avgMs": 316.83,
+        "p90Ms": 571.81,
+        "p95Ms": 1481.8,
+        "maxMs": 1559.05,
+        "errors": 0,
+        "errorPct": 0,
+        "statusCodes": {
+          "200": 60
+        },
+        "avgBytes": 1260
+      }
+    ],
+    "apiReadWaves": [
+      {
+        "endpoint": "GET /api/appointments/by-date/2027-06-15",
+        "concurrency": 5,
+        "totalReqs": 25,
+        "totalElapsedMs": 1770.94,
+        "rps": 14.12,
+        "minMs": 172.12,
+        "avgMs": 316.86,
+        "p90Ms": 699.25,
+        "p95Ms": 714.87,
+        "maxMs": 733.07,
+        "errors": 0,
+        "errorPct": 0,
+        "statusCodes": {
+          "200": 25
+        },
+        "avgBytes": 2
+      },
+      {
+        "endpoint": "GET /api/appointments/by-date/2027-06-15",
+        "concurrency": 15,
+        "totalReqs": 45,
+        "totalElapsedMs": 1465.83,
+        "rps": 30.7,
+        "minMs": 180.79,
+        "avgMs": 367.06,
+        "p90Ms": 784.08,
+        "p95Ms": 831.46,
+        "maxMs": 1209.58,
+        "errors": 0,
+        "errorPct": 0,
+        "statusCodes": {
+          "200": 45
+        },
+        "avgBytes": 2
+      },
+      {
+        "endpoint": "GET /api/appointments/by-date/2027-06-15",
+        "concurrency": 30,
+        "totalReqs": 60,
+        "totalElapsedMs": 1594.59,
+        "rps": 37.63,
+        "minMs": 174.16,
+        "avgMs": 392.7,
+        "p90Ms": 607.35,
+        "p95Ms": 1549.09,
+        "maxMs": 1583.39,
+        "errors": 0,
+        "errorPct": 0,
+        "statusCodes": {
+          "200": 60
+        },
+        "avgBytes": 2
+      },
+      {
+        "endpoint": "GET /api/appointments/by-date/2027-06-15",
+        "concurrency": 50,
+        "totalReqs": 100,
+        "totalElapsedMs": 3666.03,
+        "rps": 27.28,
+        "minMs": 218.08,
+        "avgMs": 799.57,
+        "p90Ms": 1156.77,
+        "p95Ms": 1657.86,
+        "maxMs": 3652.53,
+        "errors": 0,
+        "errorPct": 0,
+        "statusCodes": {
+          "200": 100
+        },
+        "avgBytes": 2
+      }
+    ],
+    "apiWriteWaves": [
+      {
+        "endpoint": "POST /api/appointments",
+        "concurrency": 1,
+        "totalReqs": 5,
+        "totalElapsedMs": 2226.72,
+        "rps": 2.25,
+        "minMs": 385.47,
+        "avgMs": 445.22,
+        "p90Ms": 582.18,
+        "p95Ms": 582.18,
+        "maxMs": 582.18,
+        "errors": 0,
+        "errorPct": 0,
+        "statusCodes": {
+          "201": 5
+        },
+        "avgBytes": 340
+      },
+      {
+        "endpoint": "POST /api/appointments",
+        "concurrency": 5,
+        "totalReqs": 10,
+        "totalElapsedMs": 1106.32,
+        "rps": 9.04,
+        "minMs": 381.72,
+        "avgMs": 518.18,
+        "p90Ms": 663.62,
+        "p95Ms": 665.43,
+        "maxMs": 665.43,
+        "errors": 0,
+        "errorPct": 0,
+        "statusCodes": {
+          "201": 10
+        },
+        "avgBytes": 341
+      },
+      {
+        "endpoint": "POST /api/appointments",
+        "concurrency": 15,
+        "totalReqs": 15,
+        "totalElapsedMs": 1005.91,
+        "rps": 14.91,
+        "minMs": 414.58,
+        "avgMs": 740,
+        "p90Ms": 987.17,
+        "p95Ms": 1004.18,
+        "maxMs": 1004.18,
+        "errors": 0,
+        "errorPct": 0,
+        "statusCodes": {
+          "201": 15
+        },
+        "avgBytes": 342
+      }
+    ]
+  },
+  "fase4": {
+    "db01_byId": {
+      "totalReqs": 5,
+      "totalElapsedMs": 1800.8,
+      "rps": 2.78,
+      "minMs": 278.3,
+      "avgMs": 360.1,
+      "p90Ms": 619.87,
+      "p95Ms": 619.87,
+      "maxMs": 619.87,
+      "errors": 0,
+      "errorPct": 0,
+      "statusCodes": {
+        "200": 5
+      },
+      "avgBytes": 363,
+      "rowCount": 1
+    },
+    "db02_smallSet": {
+      "totalReqs": 5,
+      "totalElapsedMs": 1071.31,
+      "rps": 4.67,
+      "minMs": 179.28,
+      "avgMs": 214.2,
+      "p90Ms": 250.39,
+      "p95Ms": 250.39,
+      "maxMs": 250.39,
+      "errors": 0,
+      "errorPct": 0,
+      "statusCodes": {
+        "200": 5
+      },
+      "avgBytes": 3656,
+      "rowCount": 10
+    },
+    "db03_largeSet": {
+      "totalReqs": 5,
+      "totalElapsedMs": 1856.18,
+      "rps": 2.69,
+      "minMs": 333.43,
+      "avgMs": 371.09,
+      "p90Ms": 408.48,
+      "p95Ms": 408.48,
+      "maxMs": 408.48,
+      "errors": 0,
+      "errorPct": 0,
+      "statusCodes": {
+        "200": 5
+      },
+      "avgBytes": 17467,
+      "rowCount": 50,
+      "totalInDb": 91
+    },
+    "db04_filtered": {
+      "totalReqs": 5,
+      "totalElapsedMs": 2129.78,
+      "rps": 2.35,
+      "minMs": 385.09,
+      "avgMs": 425.88,
+      "p90Ms": 536.96,
+      "p95Ms": 536.96,
+      "maxMs": 536.96,
+      "errors": 0,
+      "errorPct": 0,
+      "statusCodes": {
+        "200": 5
+      },
+      "avgBytes": 3711,
+      "rowCount": 10
+    },
+    "db05_concurrentUpdatesDistinct": {
+      "parallelOps": 5,
+      "totalElapsedMs": 1227.15,
+      "avgOpMs": 1084.18,
+      "statuses": [
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "integrityConfirmed": true
+    },
+    "db06_sameRecordAndSlotWrites": {
+      "sameRecordPatch": {
+        "parallelOps": 5,
+        "totalElapsedMs": 775.77,
+        "statuses": [
+          200,
+          400,
+          200,
+          200,
+          200
+        ],
+        "finalConsistentState": "cancelada",
+        "finalConsistentBarber": "ConcurrentBarber_4"
+      },
+      "sameSlotInsertRace": {
+        "parallelOps": 5,
+        "totalElapsedMs": 428.73,
+        "statusCodes": {
+          "201": 5
+        },
+        "duplicatesPrevented": false
+      }
+    }
+  },
+  "cleanup": {
+    "deletedCount": 50,
+    "remainingP12Rows": 0
+  }
+}

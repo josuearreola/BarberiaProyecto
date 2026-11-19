@@ -6,6 +6,7 @@ import '../models/appointment_model.dart';
 class LocalDbService {
   static final LocalDbService instance = LocalDbService._internal();
   LocalDbService._internal();
+  LocalDbService.forTesting();
 
   Database? _db;
 

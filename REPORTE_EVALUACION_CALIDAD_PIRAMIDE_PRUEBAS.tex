@@ -1,0 +1,312 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- PAQUETES BÁSICOS Y CONFIGURACIÓN ---
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, positioning}
+\usepackage{listings}
+\usepackage{hyperref}
+
+% --- CONFIGURACIÓN DE ENLACES Y CÓDIGO ---
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue,
+    citecolor=black
+}
+
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    frame=single,
+    showstringspaces=false
+}
+
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+
+% --- METADATOS DEL DOCUMENTO ---
+\title{\textbf{Reporte de Evaluación de Calidad Técnica: Pirámide de Pruebas}\\
+\large Diseño, Ejecución y Análisis de Pruebas Unitarias, de Integración y E2E en Aplicación Móvil}
+\author{\textbf{Proyecto Barbería} --- Componente Móvil (\texttt{phone\_app})\\
+Asignatura: Calidad y Pruebas de Software}
+\date{\today}
+
+% =========================================================================
+\begin{document}
+% =========================================================================
+
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+
+% =========================================================================
+\section{Funcionalidad Crítica Seleccionada}
+% =========================================================================
+
+Se seleccionó el \textbf{Flujo de Reservación y Gestión de Citas con Respaldo Offline}. Este módulo fue elegido debido a su nivel de integración entre múltiples capas de la aplicación:
+
+\begin{itemize}
+    \item \textbf{Capa de Presentación (\texttt{BookingTab}):} Formulario que captura datos personales, selección de servicios y horarios, y gestiona la validación de campos y retroalimentación al usuario mediante \texttt{SnackBar}.
+    \item \textbf{Capa de Negocio y Estado (\texttt{ClientProvider}):} Orquesta la lógica de negocio, coordina las llamadas REST, detecta colisiones de horario (\texttt{HTTP 409 Conflict}), administra el estado de carga y detecta transiciones de estado en citas.
+    \item \textbf{Capa de Modelo de Dominio (\texttt{AppointmentModel}):} Modela los datos de la cita y soporta serialización tolerante (\texttt{fromJson} / \texttt{toMap}) aceptando claves mixtas (\texttt{snake\_case} y \texttt{camelCase}).
+    \item \textbf{Capa de Red (\texttt{ApiService}):} Comunica con el backend REST asegurando cabeceras personalizadas (\texttt{x-app-client}) y autenticación JWT.
+    \item \textbf{Capa de Persistencia Local (\texttt{LocalDbService}):} Base de datos SQLite local para almacenamiento de citas y soporte de disponibilidad sin conexión a internet.
+\end{itemize}
+
+% =========================================================================
+\section{Fase 1. Diagnóstico de la Estrategia Actual}
+% =========================================================================
+
+Se realizó una auditoría inicial en el repositorio local para inventariar y clasificar las pruebas existentes.
+
+\subsection{Tabla de Diagnóstico Inicial}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\textwidth}{p{2.8cm}p{4.2cm}p{2.2cm}Xp{1.8cm}}
+\toprule
+\textbf{Módulo} & \textbf{Archivo Localizado} & \textbf{Nivel} & \textbf{Propósito / Alcance} & \textbf{Auto (CI)} \\
+\midrule
+\texttt{phone\_app} & \texttt{test/widget\_test.dart} & Smoke Test & Carga del widget raíz (sin lógica de negocio). & No \\
+\texttt{phone\_app} & \texttt{integration\_test/blackbox\_test.dart} & E2E & Suite de 12 pasos en celular Android físico. & No \\
+\texttt{backend} & \texttt{src/app.controller.spec.ts} & Unitaria & Prueba plantilla generada por NestJS. & No \\
+\texttt{backend} & \texttt{test/blackbox-suite.mjs} & Integración/API & 12 pruebas de endpoints REST por HTTP. & No \\
+\texttt{backend} & \texttt{test/app.e2e-spec.ts} & E2E & Prueba plantilla de arranque HTTP. & No \\
+\texttt{frontend} & \texttt{src/app/app.spec.ts} & Unitaria & Prueba de montaje generada por Angular. & No \\
+\bottomrule
+\end{tabularx}
+\caption{Diagnóstico inicial de pruebas localizadas en el repositorio.}
+\label{tab:diagnostico_inicial}
+\end{table}
+
+\subsection{Hallazgos del Diagnóstico}
+\begin{enumerate}
+    \item \textbf{Antipatrón de Cono de Helado (Pirámide Invertida):} En la aplicación móvil existían cero (0) pruebas unitarias de lógica de negocio y cero (0) pruebas de integración local. Toda la verificación recaía en suites E2E manuales en hardware real, con tiempos de ejecución superiores a 90 segundos.
+    \item \textbf{Prueba base rota:} El archivo \texttt{test/widget\_test.dart} fallaba al ejecutarse debido a una excepción por temporizador no drenado (\texttt{Timer} pendiente de 1 segundo) en \texttt{SplashScreen}.
+    \item \textbf{Ausencia de Automatización (0\%):} Ninguna prueba se encontraba enlazada a un flujo de trabajo de Integración Continua (CI/CD) ante commits o pull requests.
+\end{enumerate}
+
+% =========================================================================
+\section{Fase 2. Validación de la Base: Pruebas Unitarias}
+% =========================================================================
+
+Se diseñó e implementó la suite unitaria en \texttt{test/unit/appointment\_unit\_test.dart}. Para aislar las dependencias externas (red y SQLite), se refactorizó \texttt{ClientProvider} mediante \textbf{inyección de dependencias opcional} en su constructor, permitiendo el uso de dobles de prueba (\texttt{FakeApiService} y \texttt{FakeLocalDbService}).
+
+\subsection{Casos de Prueba Diseñados}
+
+\begin{itemize}
+    \item \textbf{\texttt{[UNIT-01]} Caso Válido (Creación con HTTP 201):} Envío de parámetros válidos (\texttt{Carlos Santana}, \texttt{5512345678}, \texttt{Corte Clásico}, \texttt{2026-11-15}, \texttt{11:00}). Verifica que retorne \texttt{true}, limpie el error y finalice el estado \texttt{isLoading}.
+    \item \textbf{\texttt{[UNIT-02]} Caso Válido (Serialización del Modelo):} Conversión bidireccional mediante \texttt{AppointmentModel.fromJson} y \texttt{toMap()}, verificando consistencia en campos opcionales como \texttt{notas} y \texttt{nombreBarbero}.
+    \item \textbf{\texttt{[UNIT-03]} Caso Límite (JSON Snake Case y Valores Nulos):} Deserialización de JSON con claves SQL (\texttt{nombre\_completo}, \texttt{fecha\_cita}) y asignación por defecto del estado \texttt{'pendiente'} cuando dicho valor no viene en el payload.
+    \item \textbf{\texttt{[UNIT-04]} Caso Límite (Normalización de Estados):} Prueba que variaciones de espaciado o mayúsculas (\texttt{' PENDIENTE '}) no disparen alertas falsas de cambio mediante \texttt{.toLowerCase().trim()}, pero que el cambio a \texttt{'confirmada'} invoque de inmediato a \texttt{onStatusChanged}.
+    \item \textbf{\texttt{[UNIT-05]} Caso Inválido (Colisión HTTP 409 / Double Booking):} Ante un conflicto de horario ocupado, el provider retorna \texttt{false} y almacena el mensaje de error descriptivo en la propiedad reactiva \texttt{error}.
+    \item \textbf{\texttt{[UNIT-06]} Caso de Error (Modo Offline sin Datos):} Caída de red simulada con caché SQLite vacía; asigna el mensaje \textit{"Modo sin conexión. No hay citas en caché local."} sin provocar cierres inesperados.
+    \item \textbf{\texttt{[UNIT-07]} Defecto Reproducible (Validación de Espacios en Blanco):} Demostración formal de que la regla de validación actual \texttt{val.isEmpty} evalúa como válida una cadena compuesta solo de espacios (\texttt{"     "}), permitiendo el envío de campos vacíos tras el \texttt{.trim()}.
+\end{itemize}
+
+\subsection{Evidencia de Ejecución}
+
+\begin{verbatim}
+$ flutter test test/unit/appointment_unit_test.dart
+00:00 +0: loading test/unit/appointment_unit_test.dart
+00:00 +0: [UNIT-01] Caso Valido: Creacion exitosa con parametros y respuesta 201
+00:00 +1: [UNIT-02] Caso Valido: Serializacion integra de AppointmentModel
+00:00 +2: [UNIT-03] Caso Limite: Parseo tolerante de JSON snake_case y defaults
+00:00 +3: [UNIT-04] Caso Limite: Normalizacion de estados y disparo selectivo
+00:00 +4: [UNIT-05] Caso Invalido: Deteccion de colision (HTTP 409 Conflict)
+00:00 +5: [UNIT-06] Caso de Error: Falla de red sin datos en cache SQLite local
+00:00 +6: [UNIT-07] Defecto Reproducible: Entrada de espacios elude validacion
+00:00 +7: All tests passed! (7 de 7 aprobadas en 0.8s)
+\end{verbatim}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\textwidth]{evidencia_pruebas.png}
+\caption{Captura de pantalla: Ejecución exitosa de las pruebas unitarias y de integración en PowerShell.}
+\label{fig:evidencia_pruebas}
+\end{figure}
+
+% =========================================================================
+\section{Fase 3. Validación de Conexiones: Pruebas de Integración}
+% =========================================================================
+
+En \texttt{test/integration/booking\_integration\_test.dart} se implementaron dos pruebas de integración donde los componentes interactúan de forma real (sin limitarse a mocks).
+
+\subsection{Integración Real 1: Cliente HTTP $\longleftrightarrow$ Servidor HTTP Local (Sockets TCP)}
+Se levantó un servidor HTTP real con \texttt{HttpServer.bind(InternetAddress.loopbackIPv4, 0)}. La aplicación móvil se comunicó a través de sockets TCP reales hacia \texttt{127.0.0.1}:
+\begin{itemize}
+    \item \textbf{\texttt{[INT-01]} Flujo Correcto:} El servidor verificó la cabecera real obligatoria \texttt{x-app-client: barberia-smart-device}, procesó la carga JSON, respondió con código \texttt{201 Created} y atendió la posterior consulta GET de recarga de citas.
+    \item \textbf{\texttt{[INT-02]} Manejo de Error Relevante:} El servidor emitió un código real \texttt{409 Conflict}; el provider capturó el error TCP y extrajo el mensaje de horario ocupado.
+\end{itemize}
+
+\subsection{Integración Real 2: Formulario UI $\longleftrightarrow$ ClientProvider $\longleftrightarrow$ FormState}
+Se montó el widget real \texttt{BookingTab} dentro de un árbol \texttt{MultiProvider} con localización en español:
+\begin{itemize}
+    \item \textbf{\texttt{[INT-03]} Rechazo por Validación:} El ingreso de campos vacíos activó el mecanismo \texttt{\_formKey.currentState!.validate()}, desplegando los textos de error \texttt{"Requerido"} e impidiendo la llamada al provider.
+    \item \textbf{\texttt{[INT-04]} Flujo Correcto UI:} Con campos válidos, la pulsación del botón \textit{"Confirmar Cita"} ejecutó la llamada en el provider y desplegó en pantalla el \texttt{SnackBar} verde \textit{"Cita agendada con éxito"}.
+\end{itemize}
+
+\subsection{Evidencia de Ejecución}
+
+\begin{verbatim}
+$ flutter test test/integration/booking_integration_test.dart
+00:00 +0: (setUpAll) Habilitando Sockets TCP en Loopback
+00:00 +0: [INT-01] Flujo Correcto: Comunicacion TCP real, headers y respuesta 201
+00:00 +1: [INT-02] Manejo de Error: Servidor real rechaza colision con HTTP 409
+00:00 +2: [INT-03] Validacion de Entrada: Formulario rechaza vacios e impide envio
+00:01 +3: [INT-04] Flujo Correcto UI: Formulario procesa envio y muestra SnackBar
+00:01 +4: (tearDownAll) Cierre de servidores efimeros
+00:01 +4: All tests passed! (4 de 4 aprobadas en 1.4s)
+\end{verbatim}
+
+% =========================================================================
+\section{Fase 4. Validación de un Flujo Completo: E2E}
+% =========================================================================
+
+Se programó el flujo crítico automatizado en \texttt{integration\_test/booking\_flow\_e2e\_test.dart} mediante el paquete \texttt{package:integration\_test}.
+
+\subsection{Procedimiento Paso a Paso}
+\begin{enumerate}
+    \item \textbf{Limpieza Inicial:} Borrado de llaves en \texttt{FlutterSecureStorage} para asegurar entorno limpio.
+    \item \textbf{Arranque y Transición:} Ejecución de \texttt{app.main()} y espera de transición de \texttt{SplashScreen} a \texttt{LoginScreen}.
+    \item \textbf{Registro Dinámico:} Creación de cuenta con credenciales de prueba no sensibles (\texttt{u[ID]@qa.test} / \texttt{TestPass123!}).
+    \item \textbf{Autenticación Real:} Inicio de sesión, guardado de token JWT y aceptación del diálogo de bienvenida.
+    \item \textbf{Agendamiento:} Navegación a la pestaña \textit{"Reservar"}, llenado de nombre, teléfono y pulsación de \textit{"Confirmar Cita"}.
+    \item \textbf{Verificación en Historial:} Navegación a la pestaña \textit{"Mis Citas"} y verificación de que el registro aparece listado con estado \texttt{pendiente}.
+\end{enumerate}
+
+\subsection{Comando de Ejecución y Limitación de Entorno}
+Para ejecutar la prueba en un celular Android físico conectado (p. ej. Motorola \texttt{moto g04} con depuración USB habilitada):
+
+\begin{verbatim}
+adb devices
+flutter test integration_test/booking_flow_e2e_test.dart -d <DEVICE_ID>
+\end{verbatim}
+
+\textbf{Documentación de Limitación:} Si el comando se ejecuta sin un dispositivo Android físico conectado o sin un emulador en ejecución, el framework Flutter notifica la falta de un dispositivo destino compatible (\textit{No supported devices found}). El procedimiento queda 100\% implementado, libre de errores sintácticos y listo para ejecución ante la conexión del dispositivo.
+
+% =========================================================================
+\section{Fase 5. Auditoría y Conclusión Técnica}
+% =========================================================================
+
+\subsection{Consolidación de Resultados}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\textwidth}{p{2.0cm}p{1.8cm}p{3.2cm}Xp{1.8cm}}
+\toprule
+\textbf{Nivel} & \textbf{ID} & \textbf{Componentes} & \textbf{Condición Evaluada} & \textbf{Resultado} \\
+\midrule
+Unitaria & \texttt{UNIT-01} & \texttt{ClientProvider} & Creación exitosa (HTTP 201) & Pasó (0.1s) \\
+Unitaria & \texttt{UNIT-02} & \texttt{AppointmentModel} & Serialización \texttt{fromJson/toMap} & Pasó (0.0s) \\
+Unitaria & \texttt{UNIT-03} & \texttt{AppointmentModel} & Claves mixtas y campos nulos & Pasó (0.0s) \\
+Unitaria & \texttt{UNIT-04} & \texttt{ClientProvider} & Normalización de estado \texttt{trim()} & Pasó (0.1s) \\
+Unitaria & \texttt{UNIT-05} & \texttt{ClientProvider} & Conflicto de horario (HTTP 409) & Pasó (0.0s) \\
+Unitaria & \texttt{UNIT-06} & \texttt{ClientProvider} & Contingencia offline sin caché & Pasó (0.0s) \\
+Unitaria & \texttt{UNIT-07} & \texttt{BookingTab} & Defecto de espacios en blanco & Pasó (0.0s) \\
+Integración & \texttt{INT-01} & Provider $\leftrightarrow$ TCP & Sockets TCP y cabeceras POST & Pasó (0.4s) \\
+Integración & \texttt{INT-02} & Provider $\leftrightarrow$ TCP & Rechazo TCP por colisión 409 & Pasó (0.3s) \\
+Integración & \texttt{INT-03} & UI $\leftrightarrow$ Provider & Validación \texttt{FormState} bloqueante & Pasó (0.4s) \\
+Integración & \texttt{INT-04} & UI $\leftrightarrow$ Provider & Flujo UI con SnackBar verde & Pasó (0.3s) \\
+E2E & \texttt{E2E-01} & Flujo Integral & Flujo completo Login $\rightarrow$ Reserva & Definida \\
+\bottomrule
+\end{tabularx}
+\caption{Consolidación de resultados de las pruebas ejecutadas.}
+\label{tab:consolidacion}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{evidencia_pruebas.png}
+\caption{Captura de pantalla en PowerShell: Ejecución consolidada de la suite de pruebas (11 de 11 aprobadas).}
+\label{fig:evidencia_consolidada}
+\end{figure}
+
+\subsection{Identificación de la Capa Más Débil}
+La auditoría técnica determinó que la \textbf{capa más débil del proyecto era la base unitaria e integradora local}. Al inicio, cualquier error en modelos o validaciones exigía compilar e instalar la app completa en el dispositivo (90--120 segundos). Con las pruebas unitarias e integradoras implementadas, los fallos de negocio se detectan en aproximadamente \textbf{2.5 segundos} en la máquina del desarrollador.
+
+\subsection{Pirámide de Pruebas: Estado Inicial vs. Estado Final}
+
+\begin{figure}[htbp]
+\centering
+\begin{minipage}{0.48\textwidth}
+\centering
+\textbf{Estado Inicial (Cono de Helado)}\\[0.3cm]
+\begin{tikzpicture}[scale=0.75]
+    % Piramide invertida
+    \draw[fill=gray!40, thick] (-3,3) -- (3,3) -- (2,1.3) -- (-2,1.3) -- cycle;
+    \node at (0, 2.15) {\small \textbf{E2E (92.3\%)}};
+    \draw[fill=gray!25, thick] (-2,1.3) -- (2,1.3) -- (1,0) -- (-1,0) -- cycle;
+    \node at (0, 0.65) {\small \textbf{Integración (0\%)}};
+    \draw[fill=gray!10, thick] (-1,0) -- (1,0) -- (0,-1) -- cycle;
+    \node at (0, -0.45) {\small \textbf{Unitarias (7.7\%)}};
+\end{tikzpicture}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\centering
+\textbf{Estado Final (Pirámide Equilibrada)}\\[0.3cm]
+\begin{tikzpicture}[scale=0.75]
+    % Piramide equilibrada
+    \draw[fill=gray!40, thick] (0,3) -- (-1,1.8) -- (1,1.8) -- cycle;
+    \node at (0, 2.2) {\small \textbf{E2E (8.3\%)}};
+    \draw[fill=gray!25, thick] (-1,1.8) -- (1,1.8) -- (2,0.6) -- (-2,0.6) -- cycle;
+    \node at (0, 1.2) {\small \textbf{Integración (33.3\%)}};
+    \draw[fill=gray!10, thick] (-2,0.6) -- (2,0.6) -- (3,-0.8) -- (-3,-0.8) -- cycle;
+    \node at (0, -0.1) {\small \textbf{Unitarias (58.4\%)}};
+\end{tikzpicture}
+\end{minipage}
+\caption{Comparativa de la Pirámide de Pruebas: Cono de Helado inicial vs. Pirámide Equilibrada final.}
+\label{fig:piramide_pruebas}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\textwidth}{Xccc}
+\toprule
+\textbf{Nivel de Prueba} & \textbf{Distribución Inicial} & \textbf{Distribución Final} & \textbf{Rango Óptimo Estándar} \\
+\midrule
+\textbf{Pruebas Unitarias} & 7.7\% (1 smoke test roto) & \textbf{58.4\%} (7 casos) & 50\% -- 70\% \\
+\textbf{Pruebas de Integración} & 0.0\% (0 casos) & \textbf{33.3\%} (4 casos) & 20\% -- 30\% \\
+\textbf{Pruebas E2E} & 92.3\% (Suite pesada) & \textbf{8.3\%} (1 flujo) & 5\% -- 15\% \\
+\midrule
+\textbf{Tiempo de Ejecución} & $>$ 90 segundos & \textbf{$\sim$ 2.5 segundos} & $<$ 10 segundos \\
+\bottomrule
+\end{tabularx}
+\caption{Distribución porcentual de las pruebas antes y después de la intervención.}
+\label{tab:porcentajes_piramide}
+\end{table}
+
+\subsection{Mejoras Técnicas Priorizadas por Riesgo}
+
+\begin{enumerate}
+    \item \textbf{Mejora 1 [Prioridad ALTA]: Validación de Entradas en \texttt{BookingTab} y Gestión de Sesión Expirada en \texttt{ClientProvider}:}
+    \begin{itemize}
+        \item \textit{Riesgo:} La prueba \texttt{UNIT-07} demostró que entradas compuestas solo por espacios (\texttt{"   "}) pasan el validador \texttt{val.isEmpty}, enviando valores vacíos al backend tras \texttt{.trim()}. Asimismo, si el token expira (\texttt{401}), \texttt{ClientProvider} oculta el fallo si hay datos en SQLite local.
+        \item \textit{Solución:} Reemplazar por \texttt{val == null || val.trim().isEmpty} e incorporar detección explícita del código 401 para cerrar sesión de forma segura.
+    \end{itemize}
+    \item \textbf{Mejora 2 [Prioridad MEDIA-ALTA]: Integración Continua (CI) con GitHub Actions:}
+    \begin{itemize}
+        \item \textit{Riesgo:} La ausencia de ejecución automática permite que regresiones en modelos o providers lleguen a ramas principales sin ser detectadas.
+        \item \textit{Solución:} Configurar un archivo \texttt{.github/workflows/flutter\_ci.yml} que ejecute \texttt{flutter test test/unit test/integration} ante cada pull request.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Estrategia de Ejecución en el Ciclo de Vida del Software}
+\begin{itemize}
+    \item \textbf{En cada cambio de código (Commit / Pull Request):} Ejecutar las suites unitarias e integradoras (\texttt{test/unit/} y \texttt{test/integration/}). Tardan menos de 3 segundos, no requieren emulador y garantizan que la lógica de negocio y persistencia sigan intactas.
+    \item \textbf{Antes de una entrega o versión (Release / Despliegue):} Ejecutar la suite E2E (\texttt{booking\_flow\_e2e\_test.dart}) en un dispositivo físico o emulador Android para validar permisos, almacenamiento en Keystore y fluidez gráfica nativa.
+\end{itemize}
+
+\end{document}

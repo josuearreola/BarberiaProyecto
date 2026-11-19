@@ -11,10 +11,10 @@ class BookingTab extends StatefulWidget {
   const BookingTab({super.key});
 
   @override
-  State<BookingTab> createState() => _BookingTabState();
+  State<BookingTab> createState() => BookingTabState();
 }
 
-class _BookingTabState extends State<BookingTab> {
+class BookingTabState extends State<BookingTab> {
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController _nameController;
@@ -27,6 +27,22 @@ class _BookingTabState extends State<BookingTab> {
   String _selectedService = 'Corte Clásico';
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = const TimeOfDay(hour: 10, minute: 0);
+
+  void setAppointmentTime(TimeOfDay newTime) {
+    if (mounted) {
+      setState(() {
+        _selectedTime = newTime;
+      });
+    }
+  }
+
+  void setAppointmentDate(DateTime newDate) {
+    if (mounted) {
+      setState(() {
+        _selectedDate = newDate;
+      });
+    }
+  }
 
   final List<String> _services = [
     'Corte Clásico',
@@ -353,7 +369,7 @@ class _BookingTabState extends State<BookingTab> {
               controller: _nameController,
               style: const TextStyle(color: Colors.white),
               decoration: _buildInputDecoration('Nombre Completo', Icons.person),
-              validator: (val) => val == null || val.isEmpty ? 'Requerido' : null,
+              validator: (val) => val == null || val.trim().isEmpty ? 'Requerido' : null,
             ),
             const SizedBox(height: 15),
             TextFormField(
@@ -361,7 +377,7 @@ class _BookingTabState extends State<BookingTab> {
               keyboardType: TextInputType.phone,
               style: const TextStyle(color: Colors.white),
               decoration: _buildInputDecoration('Teléfono', Icons.phone),
-              validator: (val) => val == null || val.isEmpty ? 'Requerido' : null,
+              validator: (val) => val == null || val.trim().isEmpty ? 'Requerido' : null,
             ),
             const SizedBox(height: 20),
 

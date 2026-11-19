@@ -1,0 +1,492 @@
+{
+  "timestamp": "2026-11-12T01:44:03.508Z",
+  "environment": {
+    "renderApiUrl": "https://barberiaproyecto-f2wb.onrender.com/api",
+    "vercelWebUrl": "https://barberia-proyecto-nine.vercel.app",
+    "databaseEngine": "PostgreSQL 16 Serverless (Neon Cloud via TypeORM Render Pool)",
+    "nodeVersion": "v20.20.2",
+    "platform": "win32 (x64)"
+  },
+  "phase3_web_api": [
+    {
+      "id": "WEB-FE-01",
+      "endpoint": "GET https://barberia-proyecto-nine.vercel.app",
+      "scenario": "Carga del Frontend Web en Vercel",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "elapsedMs": 1007.19,
+      "byteLength": 1260,
+      "passed": true
+    },
+    {
+      "id": "API-AUTH-200",
+      "endpoint": "POST /api/auth/login (Admin)",
+      "scenario": "Autenticación exitosa y verificación de sanitización (sin passwordHash)",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "elapsedMs": 33380.57,
+      "byteLength": 448,
+      "noSensitiveLeak": true,
+      "passed": true
+    },
+    {
+      "id": "API-200",
+      "endpoint": "GET /api/appointments/by-date/2026-11-20",
+      "scenario": "Consulta exitosa (200 OK)",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "elapsedMs": 345.53,
+      "byteLength": 1015,
+      "isJsonArray": true,
+      "passed": true
+    },
+    {
+      "id": "API-201",
+      "endpoint": "POST /api/appointments",
+      "scenario": "Registro creado exitosamente (201 Created)",
+      "expectedStatus": 201,
+      "actualStatus": 201,
+      "elapsedMs": 573.49,
+      "byteLength": 347,
+      "responseSample": {
+        "id": 122,
+        "nombreCompleto": "WB_P11_ Prueba Endpoint 201",
+        "telefono": "4429998877",
+        "correo": "wb_p11_audit@barberia.com",
+        "servicio": "Corte Clásico",
+        "fechaCita": "2027-11-26",
+        "horaCita": "16:31",
+        "estado": "pendiente",
+        "notas": "Prueba White Box Fase 3",
+        "nombreBarbero": null,
+        "creadoEn": "2026-11-12T01:44:39.464Z",
+        "actualizadoEn": "2026-11-12T01:44:39.464Z"
+      },
+      "passed": true
+    },
+    {
+      "id": "API-409",
+      "endpoint": "POST /api/appointments",
+      "scenario": "Conflicto de horario duplicado (409 Conflict)",
+      "expectedStatus": 409,
+      "actualStatus": 409,
+      "elapsedMs": 306.65,
+      "responseSample": {
+        "message": "La hora seleccionada ya esta ocupada",
+        "error": "Conflict",
+        "statusCode": 409
+      },
+      "passed": true
+    },
+    {
+      "id": "API-400",
+      "endpoint": "POST /api/appointments",
+      "scenario": "Datos mal estructurados y propiedad no permitida (400 Bad Request)",
+      "expectedStatus": 400,
+      "actualStatus": 400,
+      "elapsedMs": 204.24,
+      "responseSample": {
+        "message": [
+          "property campoInfiltradoNoPermitido should not exist",
+          "El nombre completo es requerido",
+          "El teléfono es requerido",
+          "El correo debe ser válido",
+          "El servicio es requerido",
+          "La fecha de la cita es requerida",
+          "La fecha debe ser válida",
+          "La hora de la cita es requerida",
+          "horaCita must be a string"
+        ],
+        "error": "Bad Request",
+        "statusCode": 400
+      },
+      "passed": true
+    },
+    {
+      "id": "API-401",
+      "endpoint": "GET /api/appointments/mis-citas & POST /api/auth/login",
+      "scenario": "Usuario no autenticado / Token inválido / Credenciales inválidas (401 Unauthorized)",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "loginStatus": 401,
+      "elapsedMs": 204.69,
+      "responseSample": {
+        "message": "Token inválido o expirado",
+        "error": "Unauthorized",
+        "statusCode": 401
+      },
+      "passed": true
+    },
+    {
+      "id": "API-403",
+      "endpoint": "GET /api/appointments",
+      "scenario": "Acceso denegado por Guard en ruta administrativa (403 Forbidden)",
+      "expectedStatus": 403,
+      "actualStatus": 403,
+      "elapsedMs": 127.68,
+      "responseSample": {
+        "message": "Forbidden resource",
+        "error": "Forbidden",
+        "statusCode": 403
+      },
+      "passed": true
+    },
+    {
+      "id": "API-404",
+      "endpoint": "GET /api/appointments/99999999",
+      "scenario": "Recurso inexistente en BD evaluado por findOne (404 Not Found)",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "elapsedMs": 301.89,
+      "responseSample": {
+        "message": "Cita con id 99999999 no encontrada",
+        "error": "Not Found",
+        "statusCode": 404
+      },
+      "passed": true
+    }
+  ],
+  "phase4_database": {
+    "crudAndConcurrency": [
+      {
+        "op": "1. Inserción de un registro válido",
+        "httpStatus": 201,
+        "elapsedMs": 504.74,
+        "passed": true,
+        "detail": "INSERT INTO appointments ejecutado exitosamente -> id=123, estado='pendiente'"
+      },
+      {
+        "op": "2. Inserción con datos incompletos o inválidos",
+        "httpStatus": 400,
+        "elapsedMs": 110.58,
+        "passed": true,
+        "detail": "Rechazo preventivo de integridad (HTTP 400): [\"El nombre completo es requerido\",\"nombreCompleto must be a string\",\"El teléfono es requerido\",\"telefono must be a string\",\"El servicio es requerido\",\"La fecha debe ser válida\",\"La hora de la cita es requerida\",\"horaCita must be a string\"]"
+      },
+      {
+        "op": "3. Consulta por identificador existente",
+        "httpStatus": 200,
+        "elapsedMs": 398.87,
+        "passed": true,
+        "detail": "SELECT * FROM appointments WHERE id = 123 -> nombreCompleto='WB_P11_DB_Persist_Test'"
+      },
+      {
+        "op": "4. Consulta por identificador inexistente",
+        "httpStatus": 404,
+        "elapsedMs": 407.96,
+        "passed": true,
+        "detail": "SELECT * FROM appointments WHERE id = 99999999 -> 0 filas -> NotFoundException (404)"
+      },
+      {
+        "op": "5. Actualización de un registro",
+        "httpStatus": 200,
+        "elapsedMs": 576.58,
+        "passed": true,
+        "detail": "UPDATE appointments SET estado='confirmada', nombre_barbero='Master Barber WhiteBox' WHERE id=123"
+      },
+      {
+        "op": "7. Consulta después de operación para verificar persistencia",
+        "httpStatus": 200,
+        "elapsedMs": 447.24,
+        "passed": true,
+        "detail": "Estado persistido en Neon: 'confirmada', barbero='Master Barber WhiteBox', actualizadoEn='2026-11-12T01:44:42.953Z'"
+      },
+      {
+        "op": "8. Dos operaciones concurrentes sobre el mismo turno y registro",
+        "httpStatus": "201/409 (INSERT) | 200/200 (UPDATE)",
+        "elapsedMs": 1023.32,
+        "passed": true,
+        "detail": "INSERT simultáneo sobre turno 16:45 retornó [201, 409] (IDs: 124, ninguno). UPDATE simultáneo sobre id=123 retornó [200, 200]."
+      },
+      {
+        "op": "6. Eliminación de un registro y consulta post-eliminación",
+        "httpStatus": 204,
+        "elapsedMs": 554.16,
+        "passed": true,
+        "detail": "DELETE retornó HTTP 204 (No Content). Consulta posterior retornó HTTP 404 (Not Found)."
+      }
+    ],
+    "queryTimings": [
+      {
+        "id": "DB-Q1",
+        "queryType": "Index Scan en idx_appointments_fecha (WHERE fecha_cita = $1 ORDER BY hora_cita ASC)",
+        "endpoint": "GET /api/appointments/by-date/2026-02-20",
+        "elapsedMs": 309.41,
+        "status": 200
+      },
+      {
+        "id": "DB-Q2",
+        "queryType": "Consulta paginada con ordenamiento (ORDER BY fecha_cita DESC LIMIT 10 OFFSET 0)",
+        "endpoint": "GET /api/appointments?page=1&limit=10&sortBy=fechaCita&sortDir=DESC",
+        "elapsedMs": 415.48,
+        "status": 200
+      },
+      {
+        "id": "DB-Q3",
+        "queryType": "Seq Scan con filtro textual multicampo (LOWER(nombre_completo) LIKE $1 OR LOWER(telefono) LIKE $1)",
+        "endpoint": "GET /api/appointments?search=juan&page=1&limit=10",
+        "elapsedMs": 376.05,
+        "status": 200
+      }
+    ]
+  },
+  "phase5_connectivity": {
+    "pingIcmp": {
+      "host": "barberiaproyecto-f2wb.onrender.com",
+      "packetsSent": 20,
+      "packetsReceived": 20,
+      "packetLossPct": 0,
+      "minMs": 40,
+      "maxMs": 192,
+      "avgMs": 100.6,
+      "stdDevMs": 38.73,
+      "samplesMs": [
+        77,
+        90,
+        110,
+        134,
+        142,
+        59,
+        67,
+        192,
+        95,
+        108,
+        115,
+        127,
+        146,
+        69,
+        48,
+        95,
+        48,
+        106,
+        40,
+        144
+      ]
+    },
+    "tenConsecutiveRequests": [
+      {
+        "requestNumber": 1,
+        "httpCode": 200,
+        "timeMs": 709.2,
+        "sizeBytes": 2
+      },
+      {
+        "requestNumber": 2,
+        "httpCode": 200,
+        "timeMs": 168.74,
+        "sizeBytes": 2
+      },
+      {
+        "requestNumber": 3,
+        "httpCode": 200,
+        "timeMs": 244.5,
+        "sizeBytes": 2
+      },
+      {
+        "requestNumber": 4,
+        "httpCode": 200,
+        "timeMs": 200.53,
+        "sizeBytes": 2
+      },
+      {
+        "requestNumber": 5,
+        "httpCode": 200,
+        "timeMs": 174.1,
+        "sizeBytes": 2
+      },
+      {
+        "requestNumber": 6,
+        "httpCode": 200,
+        "timeMs": 198.02,
+        "sizeBytes": 2
+      },
+      {
+        "requestNumber": 7,
+        "httpCode": 200,
+        "timeMs": 211.79,
+        "sizeBytes": 2
+      },
+      {
+        "requestNumber": 8,
+        "httpCode": 200,
+        "timeMs": 191.58,
+        "sizeBytes": 2
+      },
+      {
+        "requestNumber": 9,
+        "httpCode": 200,
+        "timeMs": 251.44,
+        "sizeBytes": 2
+      },
+      {
+        "requestNumber": 10,
+        "httpCode": 200,
+        "timeMs": 165.78,
+        "sizeBytes": 2
+      }
+    ],
+    "tenRequestsSummary": {
+      "endpoint": "GET /api/appointments/by-date/2026-02-20",
+      "count": 10,
+      "minMs": 165.78,
+      "maxMs": 709.2,
+      "avgMs": 251.57,
+      "stdDevMs": 155.03,
+      "avgSizeBytes": 2
+    },
+    "transferRates": {
+      "download": [
+        {
+          "measurement": 1,
+          "bytes": 15479,
+          "timeSec": 0.3454,
+          "timeMs": 345.41,
+          "mbps": 0.3585
+        },
+        {
+          "measurement": 2,
+          "bytes": 15479,
+          "timeSec": 0.3059,
+          "timeMs": 305.93,
+          "mbps": 0.4048
+        },
+        {
+          "measurement": 3,
+          "bytes": 15479,
+          "timeSec": 0.3088,
+          "timeMs": 308.8,
+          "mbps": 0.401
+        }
+      ],
+      "upload": [
+        {
+          "measurement": 1,
+          "httpStatus": 200,
+          "bytes": 65536,
+          "timeSec": 0.3008,
+          "timeMs": 300.79,
+          "mbps": 1.743
+        },
+        {
+          "measurement": 2,
+          "httpStatus": 200,
+          "bytes": 65536,
+          "timeSec": 0.2077,
+          "timeMs": 207.71,
+          "mbps": 2.5241
+        },
+        {
+          "measurement": 3,
+          "httpStatus": 200,
+          "bytes": 65536,
+          "timeSec": 0.2036,
+          "timeMs": 203.64,
+          "mbps": 2.5746
+        }
+      ]
+    },
+    "interruptionTest": {
+      "disconnectedStatus": 0,
+      "disconnectedErrorDetected": true,
+      "errorReported": "fetch failed",
+      "falsePositiveAvoided": true,
+      "recoveryStatusOnDuplicateSlot": 409,
+      "duplicatePreventedOnRecovery": true
+    },
+    "loadTesting": {
+      "readEndpoint": [
+        {
+          "concurrentUsers": 1,
+          "totalRequests": 20,
+          "successCount": 20,
+          "failCount": 0,
+          "avgLatencyMs": 194.65,
+          "minLatencyMs": 165.97,
+          "maxLatencyMs": 289.91,
+          "p95LatencyMs": 284.04,
+          "totalBytes": 40,
+          "transferRateMbps": 0.0001,
+          "cpuUserMs": 47,
+          "cpuSystemMs": 0,
+          "memoryRssMB": 48.3
+        },
+        {
+          "concurrentUsers": 5,
+          "totalRequests": 20,
+          "successCount": 20,
+          "failCount": 0,
+          "avgLatencyMs": 372.61,
+          "minLatencyMs": 202.11,
+          "maxLatencyMs": 919.67,
+          "p95LatencyMs": 814.2,
+          "totalBytes": 40,
+          "transferRateMbps": 0.0001,
+          "cpuUserMs": 78,
+          "cpuSystemMs": 15,
+          "memoryRssMB": 49.8
+        },
+        {
+          "concurrentUsers": 10,
+          "totalRequests": 20,
+          "successCount": 20,
+          "failCount": 0,
+          "avgLatencyMs": 364.99,
+          "minLatencyMs": 186.23,
+          "maxLatencyMs": 734.07,
+          "p95LatencyMs": 666.77,
+          "totalBytes": 40,
+          "transferRateMbps": 0.0003,
+          "cpuUserMs": 0,
+          "cpuSystemMs": 0,
+          "memoryRssMB": 52.72
+        }
+      ],
+      "writeEndpoint": [
+        {
+          "concurrentUsers": 1,
+          "totalRequests": 20,
+          "successCount": 20,
+          "failCount": 0,
+          "avgLatencyMs": 417.7,
+          "minLatencyMs": 389.57,
+          "maxLatencyMs": 513.11,
+          "p95LatencyMs": 498.27,
+          "totalBytes": 7062,
+          "transferRateMbps": 0.0068,
+          "cpuUserMs": 32,
+          "cpuSystemMs": 0,
+          "memoryRssMB": 50.14
+        },
+        {
+          "concurrentUsers": 5,
+          "totalRequests": 20,
+          "successCount": 20,
+          "failCount": 0,
+          "avgLatencyMs": 466.91,
+          "minLatencyMs": 372.72,
+          "maxLatencyMs": 679,
+          "p95LatencyMs": 677.57,
+          "totalBytes": 7062,
+          "transferRateMbps": 0.0257,
+          "cpuUserMs": 62,
+          "cpuSystemMs": 0,
+          "memoryRssMB": 50.64
+        },
+        {
+          "concurrentUsers": 10,
+          "totalRequests": 20,
+          "successCount": 20,
+          "failCount": 0,
+          "avgLatencyMs": 746.21,
+          "minLatencyMs": 395.83,
+          "maxLatencyMs": 1292.92,
+          "p95LatencyMs": 1282.28,
+          "totalBytes": 7102,
+          "transferRateMbps": 0.0328,
+          "cpuUserMs": 31,
+          "cpuSystemMs": 0,
+          "memoryRssMB": 52.44
+        }
+      ]
+    }
+  }
+}

@@ -16,10 +16,20 @@ CREATE TABLE IF NOT EXISTS appointments (
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Crear índices para mejorar el rendimiento
+-- Crear índices para mejorar el rendimiento y garantizar unicidad de horarios activos
 CREATE INDEX IF NOT EXISTS idx_appointments_fecha ON appointments(fecha_cita);
 CREATE INDEX IF NOT EXISTS idx_appointments_estado ON appointments(estado);
 CREATE INDEX IF NOT EXISTS idx_appointments_telefono ON appointments(telefono);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_slot_unique
+    ON appointments(fecha_cita, hora_cita)
+    WHERE estado <> 'cancelada';
+
+-- Índices trigram GIN para búsquedas textuales LIKE '%...%' sin Seq Scan
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX IF NOT EXISTS idx_appointments_nombre_trgm
+    ON appointments USING gin (lower(nombre_completo) gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_appointments_telefono_trgm
+    ON appointments USING gin (lower(telefono) gin_trgm_ops);
 
 -- Crear función para actualizar actualizado_en automáticamente
 CREATE OR REPLACE FUNCTION actualizar_fecha_modificacion()

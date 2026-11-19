@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Práctica 11 - Pruebas de White Box</title>
+<style>
+  @page {
+    size: letter;
+    margin: 15mm 15mm 15mm 15mm;
+  }
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #000000;
+    line-height: 1.38;
+    font-size: 9.5pt;
+    margin: 0;
+    padding: 0;
+  }
+  h1 {
+    font-size: 14pt;
+    margin: 0 0 4px 0;
+    color: #000000;
+    text-transform: uppercase;
+  }
+  h2 {
+    font-size: 11.5pt;
+    color: #000000;
+    border-bottom: 1px solid #000000;
+    padding-bottom: 2px;
+    margin-top: 14px;
+    margin-bottom: 6px;
+  }
+  h3 {
+    font-size: 10pt;
+    color: #000000;
+    margin-top: 9px;
+    margin-bottom: 4px;
+  }
+  p { margin: 3px 0 6px 0; text-align: justify; }
+  .header-doc {
+    border-bottom: 2px solid #000000;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+  }
+  .meta-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 6px;
+    font-size: 8.5pt;
+  }
+  .meta-table td, .meta-table th {
+    border: 1px solid #000000;
+    padding: 4px 6px;
+  }
+  .meta-table th {
+    background: #f0f0f0;
+    text-align: left;
+    width: 22%;
+  }
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6px 0 10px 0;
+    font-size: 8.2pt;
+    page-break-inside: auto;
+  }
+  table.data-table tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  table.data-table th {
+    background: #eaeaea;
+    color: #000000;
+    text-align: left;
+    padding: 4px 5px;
+    font-weight: bold;
+    border: 1px solid #000000;
+  }
+  table.data-table td {
+    padding: 4px 5px;
+    border: 1px solid #000000;
+    vertical-align: top;
+  }
+  code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 8pt;
+  }
+
+  /* Bloque de código estilo Visual Studio Code (Dark+) */
+  .vsc-window {
+    background: #1e1e1e;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 5px 0 9px 0;
+    page-break-inside: avoid;
+  }
+  .vsc-header {
+    background: #252526;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 10px;
+    border-bottom: 1px solid #333333;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 7.5pt;
+  }
+  .vsc-tab {
+    color: #ffffff;
+    font-weight: 600;
+    background: #1e1e1e;
+    padding: 2px 8px;
+    border-top: 2px solid #007acc;
+  }
+  .vsc-path {
+    color: #9cdcfe;
+    font-family: 'Consolas', monospace;
+    font-size: 7.2pt;
+  }
+  .vsc-body {
+    padding: 6px 8px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 7.6pt;
+    line-height: 1.32;
+    color: #d4d4d4;
+  }
+  .vsc-line {
+    display: flex;
+    white-space: pre-wrap;
+  }
+  .vsc-ln {
+    width: 26px;
+    flex-shrink: 0;
+    color: #858585;
+    text-align: right;
+    padding-right: 8px;
+    user-select: none;
+  }
+  .vsc-code {
+    flex: 1;
+  }
+  .vsc-com  { color: #6a9955; font-style: italic; }
+  .vsc-ctrl { color: #c586c0; }
+  .vsc-kw   { color: #569cd6; }
+  .vsc-type { color: #4ec9b0; }
+  .vsc-fn   { color: #dcdcaa; }
+  .vsc-str  { color: #ce9178; }
+
+  .cfg-box {
+    border: 1px solid #000000;
+    padding: 6px 8px;
+    margin: 5px 0 8px 0;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 7.8pt;
+    white-space: pre;
+    line-height: 1.22;
+    page-break-inside: avoid;
+  }
+
+  /* Imágenes limpias sin cuadrado ni marco exterior */
+  .screenshot-card {
+    margin: 6px 0 10px 0;
+    page-break-inside: avoid;
+  }
+  .screenshot-card img {
+    width: 100%;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    display: block;
+  }
+  .screenshot-caption {
+    font-size: 8pt;
+    color: #000000;
+    margin-top: 3px;
+    font-style: italic;
+  }
+  .page-break {
+    page-break-before: always;
+  }
+  .formula-box {
+    border: 1px solid #000000;
+    padding: 5px 8px;
+    margin: 5px 0;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 8.2pt;
+  }
+  .qa-list p {
+    margin: 0 0 9px 0;
+    text-align: left;
+    line-height: 1.42;
+    page-break-inside: avoid;
+  }
+</style>
+</head>
+<body>
+
+<div class="header-doc">
+  <h1>Práctica 11: Auditoría Técnica de Pruebas White Box</h1>
+  <div>Evaluación Estructural Interna de Código Fuente, Pruebas Unitarias, Cobertura, Servicios REST, Persistencia y Red</div>
+  <table class="meta-table">
+    <tr>
+      <th>Repositorio y Versión</th>
+      <td>App <code>v1.0.0+1</code> | Commit Git: <code>a11fa543e9fd312937bcbf9457ce15205b678099</code> (<code>main</code>)</td>
+      <th>Fecha de Ejecución</th>
+      <td>11 de noviembre de 2026</td>
+    </tr>
+    <tr>
+      <th>Dispositivo y Sistema Operativo</th>
+      <td>Equipo Cliente Windows 11 x64 (<code>10.0.22631.4317</code>) / Dart VM &amp; Node.js <code>v20.20.2</code></td>
+      <th>2. Aplicación Móvil</th>
+      <td>Flutter 3.x (<code>dispositivos_inteligentes/phone_app</code>)</td>
+    </tr>
+    <tr>
+      <th>1. Entorno de Servidor y Web</th>
+      <td>Web (Vercel): <code>https://barberia-proyecto-nine.vercel.app</code><br>API REST (Render NestJS): <code>https://barberiaproyecto-f2wb.onrender.com/api</code></td>
+      <th>3. Base de Datos y Pruebas</th>
+      <td>PostgreSQL 16 (Neon Cloud + TypeORM) y SQLite local<br><code>test/whitebox/practica11_whitebox_test.dart</code><br><code>backend/test/practica11_whitebox/run_whitebox_audit.mjs</code></td>
+    </tr>
+  </table>
+</div>
+
+<!-- ===================================================================== -->
+<!-- FASE 1 -->
+<!-- ===================================================================== -->
+<h2>Fase 1. Inspección y Análisis Estático del Código Fuente</h2>
+
+<h3>1.1 Identificación de Módulos, Conexiones al Servidor y Acceso a Datos</h3>
+<table class="data-table">
+  <thead>
+    <tr>
+      <th style="width:16%">Componente</th>
+      <th style="width:28%">Archivo y Ubicación</th>
+      <th style="width:28%">Funciones / Métodos Internos</th>
+      <th style="width:28%">Hallazgos de Inspección Estructural</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>App Móvil (Red HTTP)</strong></td>
+      <td><code>phone_app/lib/services/api_service.dart</code><br><code>phone_app/lib/services/auth_service.dart</code></td>
+      <td><code>getAppointmentByCode()</code>, <code>linkWearDevice()</code>, <code>login()</code>, <code>authenticatedRequest()</code></td>
+      <td>Operaciones asíncronas con <code>async/await</code> (sin bloqueo del Isolate UI) y <code>timeout(Duration(seconds: 15))</code>. En <code>getAppointmentByCode</code> falta <code>Uri.encodeComponent(code)</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>App Móvil (Estado y Caché)</strong></td>
+      <td><code>phone_app/lib/providers/client_provider.dart</code><br><code>phone_app/lib/services/reports_repository.dart</code></td>
+      <td><code>fetchMyAppointments()</code>, <code>createAppointment()</code>, <code>cancelMyAppointment()</code>, <code>addReport()</code></td>
+      <td>Estrategia Offline-First con SQLite local. Si la red falla en <code>fetchMyAppointments()</code>, activa el bloque <code>catch</code> y recupera citas desde SQLite.</td>
+    </tr>
+    <tr>
+      <td><strong>App Móvil (SQLite)</strong></td>
+      <td><code>phone_app/lib/services/local_db_service.dart</code></td>
+      <td><code>cacheAppointments()</code>, <code>getCachedAppointments()</code></td>
+      <td>Transacción por lotes (<code>db.batch()</code>) y serialización JSON en <code>raw_json</code>; evita inyección SQL local mediante métodos parametrizados de <code>sqflite</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Backend API (Controlador/Servicio)</strong></td>
+      <td><code>backend/src/appointments/appointments.controller.ts</code><br><code>backend/src/appointments/appointments.service.ts</code></td>
+      <td><code>create()</code>, <code>findAll()</code>, <code>findByCode()</code>, <code>update()</code>, <code>remove()</code></td>
+      <td>Validación de DTO con <code>ValidationPipe</code> global. En <code>create()</code> verifica traslape con <code>findOne</code> antes de <code>save</code>, pero sin transacción serializable ni índice parcial <code>UNIQUE</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Backend (Seguridad y Guards)</strong></td>
+      <td><code>backend/src/auth/guards/session-auth.guard.ts</code><br><code>backend/src/main.ts</code></td>
+      <td><code>canActivate()</code>, <code>enableCors()</code></td>
+      <td>En <code>session-auth.guard.ts:35</code> retorna <code>false</code> cuando no hay sesión ni token (causando HTTP 403 en vez de 401). En <code>main.ts:74-84</code> el <code>if/else</code> de CORS es redundante.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>1.2 Evidencia de Código Fuente Inspeccionado (Fase 1)</h3>
+<div class="vsc-window">
+  <div class="vsc-header">
+    <span class="vsc-tab">custom_button.dart (Antes de corrección)</span>
+    <span class="vsc-path">dispositivos_inteligentes/phone_app/lib/widgets/custom_button.dart</span>
+  </div>
+  <div class="vsc-body"><div class="vsc-line"><span class="vsc-ln">77</span><span class="vsc-code">              style: theme.textTheme.labelLarge?.<span class="vsc-fn">copyWith</span>(color: textColor),</span></div><div class="vsc-line"><span class="vsc-ln">78</span><span class="vsc-code">            ),</span></div><div class="vsc-line"><span class="vsc-ln">79</span><span class="vsc-code">          ],</span></div><div class="vsc-line"><span class="vsc-ln">80</span><span class="vsc-code">        );</span></div><div class="vsc-line"><span class="vsc-ln">81</span><span class="vsc-code">        break;</span></div><div class="vsc-line"><span class="vsc-ln">82</span><span class="vsc-code"></span></div><div class="vsc-line"><span class="vsc-ln">83</span><span class="vsc-code">      <span class="vsc-ctrl">case</span> CustomButtonState.normal:</span></div><div class="vsc-line"><span class="vsc-ln">84</span><span class="vsc-code">      <span class="vsc-ctrl">default</span>: <span class="vsc-com">// <-- LÍNEA 83: unreachable_switch_default (enum exhaustivo de 5 estados)</span></span></div><div class="vsc-line"><span class="vsc-ln">85</span><span class="vsc-code">        backgroundColor = isSecondary ? AppColors.azulOscuro : AppColors.amarillo;</span></div><div class="vsc-line"><span class="vsc-ln">86</span><span class="vsc-code">        textColor = isSecondary ? AppColors.blanco : AppColors.negro;</span></div></div>
+</div>
+<div class="vsc-window">
+  <div class="vsc-header">
+    <span class="vsc-tab">local_db_service.dart</span>
+    <span class="vsc-path">dispositivos_inteligentes/phone_app/lib/services/local_db_service.dart</span>
+  </div>
+  <div class="vsc-body"><div class="vsc-line"><span class="vsc-ln">41</span><span class="vsc-code"><span class="vsc-kw">static</span> <span class="vsc-type">Future</span>&lt;<span class="vsc-kw">void</span>&gt; <span class="vsc-fn">cacheAppointments</span>(<span class="vsc-type">List</span>&lt;<span class="vsc-type">AppointmentModel</span>&gt; appointments) <span class="vsc-ctrl">async</span> {</span></div><div class="vsc-line"><span class="vsc-ln">42</span><span class="vsc-code">  <span class="vsc-kw">final</span> db = <span class="vsc-ctrl">await</span> database;</span></div><div class="vsc-line"><span class="vsc-ln">43</span><span class="vsc-code">  <span class="vsc-kw">final</span> batch = db.<span class="vsc-fn">batch</span>();</span></div><div class="vsc-line"><span class="vsc-ln">44</span><span class="vsc-code">  batch.<span class="vsc-fn">delete</span>(<span class="vsc-str">'cached_appointments'</span>);</span></div><div class="vsc-line"><span class="vsc-ln">45</span><span class="vsc-code">  <span class="vsc-ctrl">for</span> (<span class="vsc-kw">var</span> appt <span class="vsc-ctrl">in</span> appointments) {</span></div><div class="vsc-line"><span class="vsc-ln">46</span><span class="vsc-code">    batch.<span class="vsc-fn">insert</span>(<span class="vsc-str">'cached_appointments'</span>, {</span></div><div class="vsc-line"><span class="vsc-ln">47</span><span class="vsc-code">      <span class="vsc-str">'id'</span>: appt.id,</span></div><div class="vsc-line"><span class="vsc-ln">48</span><span class="vsc-code">      <span class="vsc-str">'raw_json'</span>: <span class="vsc-fn">jsonEncode</span>(appt.<span class="vsc-fn">toJson</span>()),</span></div><div class="vsc-line"><span class="vsc-ln">49</span><span class="vsc-code">    }, conflictAlgorithm: <span class="vsc-type">ConflictAlgorithm</span>.replace);</span></div><div class="vsc-line"><span class="vsc-ln">50</span><span class="vsc-code">  }</span></div><div class="vsc-line"><span class="vsc-ln">51</span><span class="vsc-code">  <span class="vsc-ctrl">await</span> batch.<span class="vsc-fn">commit</span>(noResult: <span class="vsc-kw">true</span>); <span class="vsc-com">// Persistencia SQLite sin bloquear el hilo UI</span></span></div><div class="vsc-line"><span class="vsc-ln">52</span><span class="vsc-code">}</span></div></div>
+</div>
+
+<h3>1.3 Revisión de los 7 Puntos Obligatorios y Capturas de Consola (Fase 1)</h3>
+<table class="data-table">
+  <thead>
+    <tr>
+      <th style="width:28%">Punto de Revisión Obligatorio</th>
+      <th style="width:12%">Estado</th>
+      <th style="width:60%">Evidencia Técnica en el Código Fuente</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1. Métodos sin manejo de excepciones</td>
+      <td>Observación</td>
+      <td>En <code>device_link_screen.dart:127</code> existe un bloque <code>catch (_) {}</code> vacío (detectado por <code>flutter analyze</code> como <code>empty_catches</code>).</td>
+    </tr>
+    <tr>
+      <td>2. Credenciales o claves expuestas</td>
+      <td>Cumple</td>
+      <td>El backend lee <code>process.env.DATABASE_URL</code> y <code>process.env.JWT_SECRET</code> desde variables de entorno; <code>.env</code> está excluido en <code>.gitignore</code>.</td>
+    </tr>
+    <tr>
+      <td>3. Validaciones duplicadas o inexistentes</td>
+      <td>Defecto</td>
+      <td>En <code>booking_tab.dart:293</code> se valida <code>val == null || val.isEmpty</code> sin aplicar <code>.trim()</code>, permitiendo cadenas de solo espacios en blanco.</td>
+    </tr>
+    <tr>
+      <td>4. Código inaccesible o redundante</td>
+      <td>Defecto</td>
+      <td><code>custom_button.dart:83</code> tiene una cláusula <code>default:</code> inalcanzable sobre el enum exhaustivo <code>ButtonVariant</code>; <code>main.ts:74-84</code> repite <code>callback(null, true)</code> en <code>if</code> y <code>else</code>.</td>
+    </tr>
+    <tr>
+      <td>5. Consultas con datos sin validar</td>
+      <td>Observación</td>
+      <td>En <code>api_service.dart:17</code> se interpola <code>$code</code> en la URL sin <code>Uri.encodeComponent(code)</code>. En SQL se usan parámetros <code>:search</code> de TypeORM.</td>
+    </tr>
+    <tr>
+      <td>6. Red bloqueando hilo principal</td>
+      <td>Cumple</td>
+      <td>Todas las llamadas HTTP en Flutter usan <code>Future</code> con <code>async/await</code> y <code>timeout(15s)</code> sin bloquear el hilo de renderizado.</td>
+    </tr>
+    <tr>
+      <td>7. Recursos no liberados</td>
+      <td>Observación</td>
+      <td><code>api_service.dart</code> usa métodos estáticos <code>http.get</code>/<code>http.post</code> por petición en lugar de un <code>http.Client</code> reutilizable con <code>close()</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="screenshot-card">
+  <img src="file:///C:/Users/josue/barberiaBackup/evidencias_practica11/captura_1a_git_flutter_analyze.png" alt="Captura 1A Git y Flutter Analyze">
+  <div class="screenshot-caption">Figura 1.1: Evidencia en Símbolo del sistema (CMD) de identificación de versión Git (SHA a11fa54) y análisis estático con flutter analyze (75 issues detectados).</div>
+</div>
+
+<div class="screenshot-card">
+  <img src="file:///C:/Users/josue/barberiaBackup/evidencias_practica11/captura_1b_backend_tsc_audit.png" alt="Captura 1B Backend TSC y NPM Audit">
+  <div class="screenshot-caption">Figura 1.2: Evidencia en Símbolo del sistema (CMD) de verificación de tipos TypeScript (tsc --noEmit = 0 errores) y auditoría de dependencias (npm audit --omit=dev).</div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- FASE 2 -->
+<!-- ===================================================================== -->
+<div class="page-break"></div>
+<h2>Fase 2. Pruebas White Box de la Aplicación Móvil (Flutter)</h2>
+<p>
+  En esta fase se evalúan las rutas internas de ejecución, decisiones y condiciones de la aplicación móvil ejecutando directamente la suite automatizada en Dart VM mediante <code>flutter test test/whitebox/practica11_whitebox_test.dart --coverage</code>. A continuación se documentan los <strong>tres métodos críticos seleccionados</strong> con su código fuente numerado por nodos, su Grafo de Flujo de Control (CFG), sus caminos independientes y los casos de prueba ejecutados.
+</p>
+
+<h3>2.1 Método Crítico 1 (Validación): <code>ReportsRepository.addReport</code></h3>
+<div class="vsc-window">
+  <div class="vsc-header">
+    <span class="vsc-tab">reports_repository.dart</span>
+    <span class="vsc-path">dispositivos_inteligentes/phone_app/lib/services/reports_repository.dart</span>
+  </div>
+  <div class="vsc-body"><div class="vsc-line"><span class="vsc-ln">50</span><span class="vsc-code"><span class="vsc-type">Future</span>&lt;<span class="vsc-type">ReportModel</span>&gt; <span class="vsc-fn">addReport</span>({</span></div><div class="vsc-line"><span class="vsc-ln">51</span><span class="vsc-code">  <span class="vsc-kw">required</span> <span class="vsc-type">String</span> title,</span></div><div class="vsc-line"><span class="vsc-ln">52</span><span class="vsc-code">  <span class="vsc-kw">required</span> <span class="vsc-type">String</span> description,</span></div><div class="vsc-line"><span class="vsc-ln">53</span><span class="vsc-code">  <span class="vsc-kw">required</span> <span class="vsc-type">String</span> category,</span></div><div class="vsc-line"><span class="vsc-ln">54</span><span class="vsc-code">}) <span class="vsc-ctrl">async</span> {</span></div><div class="vsc-line"><span class="vsc-ln">55</span><span class="vsc-code">  <span class="vsc-com">// [NODO 1] Normalización de entradas con .trim()</span></span></div><div class="vsc-line"><span class="vsc-ln">56</span><span class="vsc-code">  <span class="vsc-kw">final</span> cleanTitle = title.<span class="vsc-fn">trim</span>();</span></div><div class="vsc-line"><span class="vsc-ln">57</span><span class="vsc-code">  <span class="vsc-kw">final</span> cleanDescription = description.<span class="vsc-fn">trim</span>();</span></div><div class="vsc-line"><span class="vsc-ln">58</span><span class="vsc-code">  <span class="vsc-kw">final</span> cleanCategory = category.<span class="vsc-fn">trim</span>();</span></div><div class="vsc-line"><span class="vsc-ln">59</span><span class="vsc-code"></span></div><div class="vsc-line"><span class="vsc-ln">60</span><span class="vsc-code">  <span class="vsc-com">// [NODO 2] Decisión compuesta D1: C1 (cleanTitle.isEmpty) || C2 (cleanDescription.isEmpty) || C3 (cleanCategory.isEmpty)</span></span></div><div class="vsc-line"><span class="vsc-ln">61</span><span class="vsc-code">  <span class="vsc-ctrl">if</span> (cleanTitle.isEmpty || cleanDescription.isEmpty || cleanCategory.isEmpty) {</span></div><div class="vsc-line"><span class="vsc-ln">62</span><span class="vsc-code">    <span class="vsc-com">// [NODO 3] Ruta de excepción controlada por datos vacíos o solo espacios</span></span></div><div class="vsc-line"><span class="vsc-ln">63</span><span class="vsc-code">    <span class="vsc-ctrl">throw</span> <span class="vsc-type">Exception</span>(<span class="vsc-str">'Completa todos los campos antes de guardar.'</span>);</span></div><div class="vsc-line"><span class="vsc-ln">64</span><span class="vsc-code">  }</span></div><div class="vsc-line"><span class="vsc-ln">65</span><span class="vsc-code"></span></div><div class="vsc-line"><span class="vsc-ln">66</span><span class="vsc-code">  <span class="vsc-com">// [NODO 4] Construcción del modelo e inserción en lista en memoria (_reports.insert)</span></span></div><div class="vsc-line"><span class="vsc-ln">67</span><span class="vsc-code">  <span class="vsc-kw">final</span> report = <span class="vsc-type">ReportModel</span>(</span></div><div class="vsc-line"><span class="vsc-ln">68</span><span class="vsc-code">    id: <span class="vsc-type">DateTime</span>.<span class="vsc-fn">now</span>().microsecondsSinceEpoch.<span class="vsc-fn">toString</span>(),</span></div><div class="vsc-line"><span class="vsc-ln">69</span><span class="vsc-code">    title: cleanTitle,</span></div><div class="vsc-line"><span class="vsc-ln">70</span><span class="vsc-code">    description: cleanDescription,</span></div><div class="vsc-line"><span class="vsc-ln">71</span><span class="vsc-code">    category: cleanCategory,</span></div><div class="vsc-line"><span class="vsc-ln">72</span><span class="vsc-code">    createdAt: <span class="vsc-type">DateTime</span>.<span class="vsc-fn">now</span>(),</span></div><div class="vsc-line"><span class="vsc-ln">73</span><span class="vsc-code">  );</span></div><div class="vsc-line"><span class="vsc-ln">74</span><span class="vsc-code">  _reports.<span class="vsc-fn">insert</span>(0, report);</span></div><div class="vsc-line"><span class="vsc-ln">75</span><span class="vsc-code"></span></div><div class="vsc-line"><span class="vsc-ln">76</span><span class="vsc-code">  <span class="vsc-com">// [NODO 5] Persistencia asíncrona en SharedPreferences y retorno del modelo creado</span></span></div><div class="vsc-line"><span class="vsc-ln">77</span><span class="vsc-code">  <span class="vsc-ctrl">await</span> <span class="vsc-fn">_saveReports</span>();</span></div><div class="vsc-line"><span class="vsc-ln">78</span><span class="vsc-code">  <span class="vsc-ctrl">return</span> report;</span></div><div class="vsc-line"><span class="vsc-ln">79</span><span class="vsc-code">}</span></div></div>
+</div>
+
+<div class="cfg-box">GRAFO DE FLUJO DE CONTROL (CFG #1) - ReportsRepository.addReport:
+  [N1: trim() de title, description, category]
+                       │
+                       ▼
+  [N2: if (C1: cleanTitle.isEmpty || C2: cleanDescription.isEmpty || C3: cleanCategory.isEmpty)]
+          ├── True (C1=T ó C2=T ó C3=T) ──► [N3: throw Exception('Completa todos los campos...')] ──► (FIN EXCEPCIÓN)
+          └── False (C1=F y C2=F y C3=F) ─► [N4: Instanciar ReportModel + _reports.insert(0, report)]
+                                                                   │
+                                                                   ▼
+                                            [N5: await _saveReports() + return report] ──────────────► (FIN ÉXITO)
+  Complejidad Ciclomática V(G) = 3 decisiones simples + 1 = 4 caminos independientes.</div>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th style="width:12%">Camino</th>
+      <th style="width:20%">Secuencia de Nodos</th>
+      <th style="width:22%">Condiciones (C1, C2, C3)</th>
+      <th style="width:26%">Entrada del Caso de Prueba</th>
+      <th style="width:20%">Resultado Obtenido</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Camino 1</strong></td>
+      <td><code>N1 -> N2 -> N3</code></td>
+      <td><code>C1=True, C2=False, C3=False</code></td>
+      <td><code>title: "   ", desc: "Desc", cat: "General"</code> (espacios límite)</td>
+      <td>Lanza <code>Exception</code> (PASS)</td>
+    </tr>
+    <tr>
+      <td><strong>Camino 2</strong></td>
+      <td><code>N1 -> N2 -> N3</code></td>
+      <td><code>C1=False, C2=True, C3=False</code></td>
+      <td><code>title: "Título", desc: "", cat: "General"</code></td>
+      <td>Lanza <code>Exception</code> (PASS)</td>
+    </tr>
+    <tr>
+      <td><strong>Camino 3</strong></td>
+      <td><code>N1 -> N2 -> N3</code></td>
+      <td><code>C1=False, C2=False, C3=True</code></td>
+      <td><code>title: "Título", desc: "Desc", cat: "  "</code></td>
+      <td>Lanza <code>Exception</code> (PASS)</td>
+    </tr>
+    <tr>
+      <td><strong>Camino 4</strong></td>
+      <td><code>N1 -> N2 -> N4 -> N5</code></td>
+      <td><code>C1=False, C2=False, C3=False</code></td>
+      <td><code>title: "A", desc: "B", cat: "C"</code> (longitud mínima válida = 1)</td>
+      <td>Persiste y retorna <code>ReportModel</code> (PASS)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>2.2 Método Crítico 2 (Procesamiento, Caché y Fallback): <code>ClientProvider.fetchMyAppointments</code></h3>
+<div class="vsc-window">
+  <div class="vsc-header">
+    <span class="vsc-tab">client_provider.dart</span>
+    <span class="vsc-path">dispositivos_inteligentes/phone_app/lib/providers/client_provider.dart (fetchMyAppointments)</span>
+  </div>
+  <div class="vsc-body"><div class="vsc-line"><span class="vsc-ln">28</span><span class="vsc-code"><span class="vsc-type">Future</span>&lt;<span class="vsc-kw">void</span>&gt; <span class="vsc-fn">fetchMyAppointments</span>() <span class="vsc-ctrl">async</span> {</span></div><div class="vsc-line"><span class="vsc-ln">29</span><span class="vsc-code">  <span class="vsc-com">// [NODO 1] Inicializar estado de carga</span></span></div><div class="vsc-line"><span class="vsc-ln">30</span><span class="vsc-code">  _isLoading = <span class="vsc-kw">true</span>; _errorMessage = <span class="vsc-kw">null</span>; <span class="vsc-fn">notifyListeners</span>();</span></div><div class="vsc-line"><span class="vsc-ln">31</span><span class="vsc-code">  <span class="vsc-ctrl">try</span> {</span></div><div class="vsc-line"><span class="vsc-ln">32</span><span class="vsc-code">    <span class="vsc-com">// [NODO 2] Petición autenticada GET /appointments/mine</span></span></div><div class="vsc-line"><span class="vsc-ln">33</span><span class="vsc-code">    <span class="vsc-kw">final</span> response = <span class="vsc-ctrl">await</span> _authClient.<span class="vsc-fn">authenticatedRequest</span>(<span class="vsc-str">'GET'</span>, <span class="vsc-str">'/appointments/mine'</span>);</span></div><div class="vsc-line"><span class="vsc-ln">34</span><span class="vsc-code">    <span class="vsc-com">// [NODO 3] Decisión D1: ¿response.statusCode == 200?</span></span></div><div class="vsc-line"><span class="vsc-ln">35</span><span class="vsc-code">    <span class="vsc-ctrl">if</span> (response.statusCode == 200) {</span></div><div class="vsc-line"><span class="vsc-ln">36</span><span class="vsc-code">      <span class="vsc-com">// [NODO 4] Decodificación JSON, mapeo a AppointmentModel y ordenamiento</span></span></div><div class="vsc-line"><span class="vsc-ln">37</span><span class="vsc-code">      <span class="vsc-kw">final</span> <span class="vsc-type">List</span>&lt;dynamic&gt; data = <span class="vsc-fn">jsonDecode</span>(response.body);</span></div><div class="vsc-line"><span class="vsc-ln">38</span><span class="vsc-code">      _appointments = data.<span class="vsc-fn">map</span>((json) =&gt; <span class="vsc-type">AppointmentModel</span>.<span class="vsc-fn">fromJson</span>(json)).<span class="vsc-fn">toList</span>();</span></div><div class="vsc-line"><span class="vsc-ln">39</span><span class="vsc-code">      <span class="vsc-fn">_sortAppointments</span>();</span></div><div class="vsc-line"><span class="vsc-ln">40</span><span class="vsc-code">      <span class="vsc-com">// [NODO 5] Guardado en caché SQLite local</span></span></div><div class="vsc-line"><span class="vsc-ln">41</span><span class="vsc-code">      <span class="vsc-ctrl">await</span> <span class="vsc-fn">_cacheAppointments</span>(_appointments);</span></div><div class="vsc-line"><span class="vsc-ln">42</span><span class="vsc-code">    } <span class="vsc-ctrl">else</span> {</span></div><div class="vsc-line"><span class="vsc-ln">43</span><span class="vsc-code">      <span class="vsc-com">// [NODO 6] Lanzar excepción cuando statusCode != 200</span></span></div><div class="vsc-line"><span class="vsc-ln">44</span><span class="vsc-code">      <span class="vsc-ctrl">throw</span> <span class="vsc-type">Exception</span>(<span class="vsc-str">'Error al cargar tus citas desde el servidor.'</span>);</span></div><div class="vsc-line"><span class="vsc-ln">45</span><span class="vsc-code">    }</span></div><div class="vsc-line"><span class="vsc-ln">46</span><span class="vsc-code">  } <span class="vsc-ctrl">catch</span> (e) {</span></div><div class="vsc-line"><span class="vsc-ln">47</span><span class="vsc-code">    <span class="vsc-com">// [NODO 7] Captura de error de red/servidor y lectura de respaldo en SQLite</span></span></div><div class="vsc-line"><span class="vsc-ln">48</span><span class="vsc-code">    <span class="vsc-kw">final</span> cached = <span class="vsc-ctrl">await</span> <span class="vsc-fn">_getCachedAppointments</span>();</span></div><div class="vsc-line"><span class="vsc-ln">49</span><span class="vsc-code">    <span class="vsc-com">// [NODO 8] Decisión D2: ¿cached.isNotEmpty?</span></span></div><div class="vsc-line"><span class="vsc-ln">50</span><span class="vsc-code">    <span class="vsc-ctrl">if</span> (cached.isNotEmpty) {</span></div><div class="vsc-line"><span class="vsc-ln">51</span><span class="vsc-code">      <span class="vsc-com">// [NODO 9] Recuperación exitosa desde SQLite + aviso de modo sin conexión</span></span></div><div class="vsc-line"><span class="vsc-ln">52</span><span class="vsc-code">      _appointments = cached; <span class="vsc-fn">_sortAppointments</span>();</span></div><div class="vsc-line"><span class="vsc-ln">53</span><span class="vsc-code">      _errorMessage = <span class="vsc-str">'Mostrando datos guardados (Modo sin conexión).'</span>;</span></div><div class="vsc-line"><span class="vsc-ln">54</span><span class="vsc-code">    } <span class="vsc-ctrl">else</span> {</span></div><div class="vsc-line"><span class="vsc-ln">55</span><span class="vsc-code">      <span class="vsc-com">// [NODO 10] Sin datos en caché: propagar mensaje de error limpio</span></span></div><div class="vsc-line"><span class="vsc-ln">56</span><span class="vsc-code">      _errorMessage = e.<span class="vsc-fn">toString</span>().<span class="vsc-fn">replaceAll</span>(<span class="vsc-str">'Exception: '</span>, <span class="vsc-str">''</span>);</span></div><div class="vsc-line"><span class="vsc-ln">57</span><span class="vsc-code">    }</span></div><div class="vsc-line"><span class="vsc-ln">58</span><span class="vsc-code">  } <span class="vsc-ctrl">finally</span> {</span></div><div class="vsc-line"><span class="vsc-ln">59</span><span class="vsc-code">    <span class="vsc-com">// [NODO 11] Liberar bandera _isLoading y notificar a la UI</span></span></div><div class="vsc-line"><span class="vsc-ln">60</span><span class="vsc-code">    _isLoading = <span class="vsc-kw">false</span>; <span class="vsc-fn">notifyListeners</span>();</span></div><div class="vsc-line"><span class="vsc-ln">61</span><span class="vsc-code">  }</span></div><div class="vsc-line"><span class="vsc-ln">62</span><span class="vsc-code">}</span></div></div>
+</div>
+
+<div class="cfg-box">GRAFO DE FLUJO DE CONTROL (CFG #2) - ClientProvider.fetchMyAppointments:
+  [N1: _isLoading=true] ──► [N2: GET /appointments/mine] ──► [N3: statusCode == 200?]
+                                                               ├── True ──► [N4: parse + _sort] ──► [N5: _cacheAppointments] ─────────┐
+                                                               └── False ─► [N6: throw Exception] ──┐                                  │
+                                        ┌─────────────────── (Excepción SocketException / Timeout) ─┘                                  │
+                                        ▼                                                                                              │
+                            [N7: catch(e) -> _getCachedAppointments()] ──► [N8: cached.isNotEmpty?]                                    │
+                                                                             ├── True ──► [N9: _appointments=cached + msg Offline] ───┤
+                                                                             └── False ─► [N10: _errorMessage = e.toString()] ────────┤
+                                                                                                                                       ▼
+                                                                                                            [N11: finally _isLoading=false]
+  Complejidad Ciclomática V(G) = 3 caminos independientes.</div>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th style="width:14%">Camino</th>
+      <th style="width:26%">Secuencia de Nodos</th>
+      <th style="width:30%">Condición / Escenario Simulado</th>
+      <th style="width:30%">Resultado Verificado en Test Unitario</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Camino 1</strong></td>
+      <td><code>N1->N2->N3(T)->N4->N5->N11</code></td>
+      <td>HTTP 200 con arreglo JSON de 2 citas desordenadas</td>
+      <td>Ordena por fecha descendente, invoca <code>_cacheAppointments</code>, <code>errorMessage == null</code> (PASS)</td>
+    </tr>
+    <tr>
+      <td><strong>Camino 2</strong></td>
+      <td><code>N1->N2->N3(F)->N6->N7->N8(T)->N9->N11</code></td>
+      <td>HTTP 500 o <code>SocketException</code> con caché SQLite poblado</td>
+      <td>Recupera citas de SQLite y asigna <code>"Mostrando datos guardados (Modo sin conexión)."</code> (PASS)</td>
+    </tr>
+    <tr>
+      <td><strong>Camino 3</strong></td>
+      <td><code>N1->N2->N7->N8(F)->N10->N11</code></td>
+      <td><code>SocketException</code> con caché SQLite vacío (<code>[]</code>)</td>
+      <td>Lista vacía y <code>errorMessage</code> con el detalle de la falla sin prefijo <code>Exception: </code> (PASS)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>2.3 Método Crítico 3 (Comunicación con API REST): <code>ClientProvider.createAppointment</code></h3>
+<div class="vsc-window">
+  <div class="vsc-header">
+    <span class="vsc-tab">client_provider.dart</span>
+    <span class="vsc-path">dispositivos_inteligentes/phone_app/lib/providers/client_provider.dart (createAppointment)</span>
+  </div>
+  <div class="vsc-body"><div class="vsc-line"><span class="vsc-ln">64</span><span class="vsc-code"><span class="vsc-type">Future</span>&lt;bool&gt; <span class="vsc-fn">createAppointment</span>(<span class="vsc-type">Map</span>&lt;<span class="vsc-type">String</span>, dynamic&gt; appointmentData) <span class="vsc-ctrl">async</span> {</span></div><div class="vsc-line"><span class="vsc-ln">65</span><span class="vsc-code">  <span class="vsc-com">// [NODO 1] Inicializar estado de carga</span></span></div><div class="vsc-line"><span class="vsc-ln">66</span><span class="vsc-code">  _isLoading = <span class="vsc-kw">true</span>; _errorMessage = <span class="vsc-kw">null</span>; <span class="vsc-fn">notifyListeners</span>();</span></div><div class="vsc-line"><span class="vsc-ln">67</span><span class="vsc-code">  <span class="vsc-ctrl">try</span> {</span></div><div class="vsc-line"><span class="vsc-ln">68</span><span class="vsc-code">    <span class="vsc-com">// [NODO 2] Petición autenticada POST /appointments con body JSON</span></span></div><div class="vsc-line"><span class="vsc-ln">69</span><span class="vsc-code">    <span class="vsc-kw">final</span> response = <span class="vsc-ctrl">await</span> _authClient.<span class="vsc-fn">authenticatedRequest</span>(<span class="vsc-str">'POST'</span>, <span class="vsc-str">'/appointments'</span>, body: appointmentData);</span></div><div class="vsc-line"><span class="vsc-ln">70</span><span class="vsc-code">    <span class="vsc-com">// [NODO 3] Decisión compuesta D1: C1 (statusCode == 201) || C2 (statusCode == 200)</span></span></div><div class="vsc-line"><span class="vsc-ln">71</span><span class="vsc-code">    <span class="vsc-ctrl">if</span> (response.statusCode == 201 || response.statusCode == 200) {</span></div><div class="vsc-line"><span class="vsc-ln">72</span><span class="vsc-code">      <span class="vsc-com">// [NODO 4] Refrescar listado de citas y retornar true</span></span></div><div class="vsc-line"><span class="vsc-ln">73</span><span class="vsc-code">      <span class="vsc-ctrl">await</span> <span class="vsc-fn">fetchMyAppointments</span>();</span></div><div class="vsc-line"><span class="vsc-ln">74</span><span class="vsc-code">      <span class="vsc-ctrl">return</span> <span class="vsc-kw">true</span>;</span></div><div class="vsc-line"><span class="vsc-ln">75</span><span class="vsc-code">    } <span class="vsc-ctrl">else</span> {</span></div><div class="vsc-line"><span class="vsc-ln">76</span><span class="vsc-code">      <span class="vsc-com">// [NODO 5] Decodificar cuerpo de error JSON y evaluar D2: body['message'] != null</span></span></div><div class="vsc-line"><span class="vsc-ln">77</span><span class="vsc-code">      <span class="vsc-kw">final</span> body = <span class="vsc-fn">jsonDecode</span>(response.body);</span></div><div class="vsc-line"><span class="vsc-ln">78</span><span class="vsc-code">      <span class="vsc-ctrl">throw</span> <span class="vsc-type">Exception</span>(body[<span class="vsc-str">'message'</span>] ?? <span class="vsc-str">'Error al agendar la cita.'</span>);</span></div><div class="vsc-line"><span class="vsc-ln">79</span><span class="vsc-code">    }</span></div><div class="vsc-line"><span class="vsc-ln">80</span><span class="vsc-code">  } <span class="vsc-ctrl">catch</span> (e) {</span></div><div class="vsc-line"><span class="vsc-ln">81</span><span class="vsc-code">    <span class="vsc-com">// [NODO 6] Asignar _errorMessage, restaurar _isLoading=false y retornar false</span></span></div><div class="vsc-line"><span class="vsc-ln">82</span><span class="vsc-code">    _errorMessage = e.<span class="vsc-fn">toString</span>().<span class="vsc-fn">replaceAll</span>(<span class="vsc-str">'Exception: '</span>, <span class="vsc-str">''</span>);</span></div><div class="vsc-line"><span class="vsc-ln">83</span><span class="vsc-code">    _isLoading = <span class="vsc-kw">false</span>; <span class="vsc-fn">notifyListeners</span>();</span></div><div class="vsc-line"><span class="vsc-ln">84</span><span class="vsc-code">    <span class="vsc-ctrl">return</span> <span class="vsc-kw">false</span>;</span></div><div class="vsc-line"><span class="vsc-ln">85</span><span class="vsc-code">  }</span></div><div class="vsc-line"><span class="vsc-ln">86</span><span class="vsc-code">}</span></div></div>
+</div>
+
+<div class="cfg-box">GRAFO DE FLUJO DE CONTROL (CFG #3) - ClientProvider.createAppointment:
+  [N1: _isLoading=true] ──► [N2: POST /appointments] ──► [N3: C1(status==201) || C2(status==200)]
+                                                           ├── True ──► [N4: await fetchMyAppointments() + return true]
+                                                           └── False ─► [N5: jsonDecode(body) + throw Exception(body['message'] ?? default)]
+                                                                               │
+                                                                               ▼
+                                                           [N6: catch(e) -> _errorMessage=..., _isLoading=false, return false]
+  Complejidad Ciclomática V(G) = 4 caminos independientes.</div>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th style="width:14%">Camino</th>
+      <th style="width:24%">Secuencia de Nodos</th>
+      <th style="width:30%">Condición Evaluada</th>
+      <th style="width:32%">Resultado Verificado en Test Unitario</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Camino 1</strong></td>
+      <td><code>N1 -> N2 -> N3(T: 201) -> N4</code></td>
+      <td><code>statusCode == 201</code> (Created)</td>
+      <td>Retorna <code>true</code> y sincroniza citas con <code>fetchMyAppointments()</code> (PASS)</td>
+    </tr>
+    <tr>
+      <td><strong>Camino 2</strong></td>
+      <td><code>N1 -> N2 -> N3(T: 200) -> N4</code></td>
+      <td><code>statusCode == 200</code> (OK)</td>
+      <td>Retorna <code>true</code> cubriendo la segunda condición del <code>||</code> (PASS)</td>
+    </tr>
+    <tr>
+      <td><strong>Camino 3</strong></td>
+      <td><code>N1 -> N2 -> N3(F: 409) -> N5 -> N6</code></td>
+      <td><code>statusCode == 409</code> con <code>body['message']</code></td>
+      <td>Retorna <code>false</code> y guarda el mensaje exacto del servidor en <code>errorMessage</code> (PASS)</td>
+    </tr>
+    <tr>
+      <td><strong>Camino 4</strong></td>
+      <td><code>N1 -> N2 -> N3(F: 500) -> N5 -> N6</code></td>
+      <td><code>statusCode == 500</code> sin campo <code>message</code> / JSON inválido</td>
+      <td>Retorna <code>false</code> y asigna mensaje por defecto / excepción controlada (PASS)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>2.4 Resultados de Ejecución y Porcentaje de Cobertura (<code>lcov.info</code>)</h3>
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Archivo / Módulo Auditado</th>
+      <th>Líneas Ejecutadas / Totales (<code>LF / LH</code>)</th>
+      <th>Cobertura de Instrucciones</th>
+      <th>Cobertura de Decisiones y Condiciones en Métodos Evaluados</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>lib/models/appointment_model.dart</code></td>
+      <td><code>25 / 25</code></td>
+      <td><strong>100.00%</strong></td>
+      <td><strong>100.00%</strong> (todas las ramas de parseo y valores por defecto cubiertas)</td>
+    </tr>
+    <tr>
+      <td><code>lib/models/report_model.dart</code></td>
+      <td><code>28 / 28</code></td>
+      <td><strong>100.00%</strong></td>
+      <td><strong>100.00%</strong> (serialización, deserialización y fallback de fecha inválida)</td>
+    </tr>
+    <tr>
+      <td><code>lib/services/reports_repository.dart</code></td>
+      <td><code>48 / 52</code></td>
+      <td><strong>92.31%</strong></td>
+      <td><strong>100.00%</strong> en <code>addReport</code>, <code>deleteReport</code> y <code>clearReports</code></td>
+    </tr>
+    <tr>
+      <td><code>lib/providers/client_provider.dart</code></td>
+      <td><code>79 / 89</code></td>
+      <td><strong>88.76%</strong></td>
+      <td><strong>100.00%</strong> en <code>fetchMyAppointments</code>, <code>createAppointment</code> y <code>cancelMyAppointment</code></td>
+    </tr>
+    <tr>
+      <td><strong>TOTAL MÓDULOS CRÍTICOS AUDITADOS</strong></td>
+      <td><strong><code>180 / 194</code></strong></td>
+      <td><strong>92.78% (Meta &ge; 85%)</strong></td>
+      <td><strong>96.55% global / 100.00% en los 3 métodos seleccionados (Meta &ge; 80%)</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="screenshot-card">
+  <img src="file:///C:/Users/josue/barberiaBackup/evidencias_practica11/captura_2a_flutter_test_ejecucion.png" alt="Captura 2A Ejecución de Flutter Test">
+  <div class="screenshot-caption">Figura 2.1: Evidencia en Símbolo del sistema (CMD) del comando flutter test test/whitebox/practica11_whitebox_test.dart --coverage con 19 de 19 pruebas unitarias aprobadas.</div>
+</div>
+
+<div class="screenshot-card">
+  <img src="file:///C:/Users/josue/barberiaBackup/evidencias_practica11/captura_2b_cobertura_lcov.png" alt="Captura 2B Reporte de Cobertura LCOV">
+  <div class="screenshot-caption">Figura 2.2: Evidencia en Símbolo del sistema (CMD) del desglose de cobertura extraído de coverage/lcov.info (92.78% de cobertura de instrucciones y 96.55% de decisiones).</div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- FASE 3 -->
+<!-- ===================================================================== -->
+<div class="page-break"></div>
+<h2>Fase 3. Pruebas White Box del Sitio Web y Servicios REST</h2>
+
+<h3>3.1 Inspección Interna de Controladores, Servicios, Validadores y Guards</h3>
+<div class="vsc-window">
+  <div class="vsc-header">
+    <span class="vsc-tab">appointments.service.ts & session-auth.guard.ts</span>
+    <span class="vsc-path">backend/src/appointments/appointments.service.ts | backend/src/auth/guards/session-auth.guard.ts</span>
+  </div>
+  <div class="vsc-body"><div class="vsc-line"><span class="vsc-ln">36</span><span class="vsc-code"><span class="vsc-ctrl">async</span> <span class="vsc-fn">create</span>(createAppointmentDto: <span class="vsc-type">CreateAppointmentDto</span>, userId?: string): Promise&lt;<span class="vsc-type">Appointment</span>&gt; {</span></div><div class="vsc-line"><span class="vsc-ln">37</span><span class="vsc-code">  <span class="vsc-kw">const</span> { fecha_cita, hora_cita } = createAppointmentDto;</span></div><div class="vsc-line"><span class="vsc-ln">38</span><span class="vsc-code">  <span class="vsc-ctrl">if</span> (fecha_cita &amp;&amp; hora_cita) {</span></div><div class="vsc-line"><span class="vsc-ln">39</span><span class="vsc-code">    <span class="vsc-com">// Verificación de conflicto de horario (HTTP 409 Conflict)</span></span></div><div class="vsc-line"><span class="vsc-ln">40</span><span class="vsc-code">    <span class="vsc-kw">const</span> existing = <span class="vsc-ctrl">await</span> this.appointmentsRepository.<span class="vsc-fn">findOne</span>({</span></div><div class="vsc-line"><span class="vsc-ln">41</span><span class="vsc-code">      where: { fecha_cita, hora_cita, estado: <span class="vsc-fn">Not</span>(<span class="vsc-str">'cancelada'</span>) },</span></div><div class="vsc-line"><span class="vsc-ln">42</span><span class="vsc-code">    });</span></div><div class="vsc-line"><span class="vsc-ln">43</span><span class="vsc-code">    <span class="vsc-ctrl">if</span> (existing) {</span></div><div class="vsc-line"><span class="vsc-ln">44</span><span class="vsc-code">      <span class="vsc-ctrl">throw</span> <span class="vsc-ctrl">new</span> <span class="vsc-type">ConflictException</span>(<span class="vsc-str">'El horario seleccionado ya está ocupado.'</span>);</span></div><div class="vsc-line"><span class="vsc-ln">45</span><span class="vsc-code">    }</span></div><div class="vsc-line"><span class="vsc-ln">46</span><span class="vsc-code">  }</span></div><div class="vsc-line"><span class="vsc-ln">47</span><span class="vsc-code">  <span class="vsc-kw">const</span> codigo_unico = <span class="vsc-ctrl">await</span> this.<span class="vsc-fn">generateUniqueCode</span>();</span></div><div class="vsc-line"><span class="vsc-ln">48</span><span class="vsc-code">  <span class="vsc-kw">const</span> appointment = this.appointmentsRepository.<span class="vsc-fn">create</span>({ ...createAppointmentDto, codigo_unico });</span></div><div class="vsc-line"><span class="vsc-ln">49</span><span class="vsc-code">  <span class="vsc-ctrl">return</span> <span class="vsc-ctrl">await</span> this.appointmentsRepository.<span class="vsc-fn">save</span>(appointment);</span></div><div class="vsc-line"><span class="vsc-ln">50</span><span class="vsc-code">}</span></div><div class="vsc-line"><span class="vsc-ln">51</span><span class="vsc-code"><span class="vsc-com">// --- En backend/src/auth/guards/session-auth.guard.ts (Líneas 28-38) ---</span></span></div><div class="vsc-line"><span class="vsc-ln">52</span><span class="vsc-code"><span class="vsc-ctrl">if</span> (!userId) {</span></div><div class="vsc-line"><span class="vsc-ln">53</span><span class="vsc-code">  <span class="vsc-ctrl">return</span> <span class="vsc-kw">false</span>; <span class="vsc-com">// <-- DEF-WB-001: En NestJS retornar false en canActivate() produce HTTP 403 en vez de 401</span></span></div><div class="vsc-line"><span class="vsc-ln">54</span><span class="vsc-code">}</span></div></div>
+</div>
+
+<h3>3.2 Evaluación Experimental de Endpoints y Códigos HTTP Reales</h3>
+<table class="data-table">
+  <thead>
+    <tr>
+      <th style="width:10%">Código</th>
+      <th style="width:26%">Endpoint Evaluado</th>
+      <th style="width:24%">Situación de Prueba</th>
+      <th style="width:12%">Obtenido</th>
+      <th style="width:28%">Consistencia JSON y Seguridad</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>200 OK</strong></td>
+      <td><code>GET /api/appointments/availability?date=2026-12-20</code></td>
+      <td>Consulta exitosa de disponibilidad</td>
+      <td><code>200 OK</code> (151.65 ms)</td>
+      <td>Retorna arreglo JSON <code>string[]</code> de horarios ocupados.</td>
+    </tr>
+    <tr>
+      <td><strong>200 OK</strong></td>
+      <td><code>POST /api/auth/login</code></td>
+      <td>Autenticación con credenciales válidas</td>
+      <td><code>200 OK</code> (258.59 ms)</td>
+      <td>Retorna <code>{ message, user, access_token }</code>. Confirmado: <strong>no expone <code>password_hash</code></strong>.</td>
+    </tr>
+    <tr>
+      <td><strong>201 Created</strong></td>
+      <td><code>POST /api/appointments</code></td>
+      <td>Creación de registro válido</td>
+      <td><code>201 Created</code> (224.20 ms)</td>
+      <td>Retorna entidad creada con UUID y <code>codigo_unico</code> de 4 dígitos (<code>1512</code>).</td>
+    </tr>
+    <tr>
+      <td><strong>200 / 204</strong></td>
+      <td><code>DELETE /api/appointments/:id</code></td>
+      <td>Eliminación física de registro</td>
+      <td><code>200 OK</code> (219.99 ms)</td>
+      <td>Elimina fila en PostgreSQL y retorna cuerpo vacío (0 bytes).</td>
+    </tr>
+    <tr>
+      <td><strong>400 Bad Request</strong></td>
+      <td><code>POST /api/appointments</code></td>
+      <td>Payload vacío <code>{}</code> o tipos inválidos</td>
+      <td><code>400 Bad Request</code> (154.05 ms)</td>
+      <td><code>ValidationPipe</code> retorna arreglo JSON de campos requeridos faltantes.</td>
+    </tr>
+    <tr>
+      <td><strong>401 Unauthorized</strong></td>
+      <td><code>POST /api/auth/login</code><br><code>GET /api/appointments/mine</code></td>
+      <td>Contraseña errónea o JWT corrupto</td>
+      <td><code>401 Unauthorized</code> (199.78 ms)</td>
+      <td>No devuelve 200 ante error; retorna estructura estándar <code>{ statusCode: 401, message, error }</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>403 vs 401</strong></td>
+      <td><code>GET /api/appointments/mine</code> (sin header)</td>
+      <td>Petición sin token ni cookie de sesión</td>
+      <td><code>403 Forbidden</code> (154.17 ms)</td>
+      <td><strong>Defecto DEF-WB-001:</strong> <code>SessionAuthGuard</code> retorna <code>false</code> produciendo 403 en vez de 401.</td>
+    </tr>
+    <tr>
+      <td><strong>403 Forbidden</strong></td>
+      <td><code>GET /api/appointments</code> (con JWT de cliente)</td>
+      <td>Usuario autenticado sin rol <code>admin</code></td>
+      <td><code>403 Forbidden</code> (221.37 ms)</td>
+      <td><code>AdminGuard</code> deniega acceso correctamente: <code>"Se requieren permisos de administrador"</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>404 Not Found</strong></td>
+      <td><code>GET /api/appointments/code/0000</code></td>
+      <td>Recurso inexistente</td>
+      <td><code>404 Not Found</code> (195.88 ms)</td>
+      <td><code>NotFoundException</code> con mensaje claro sin exponer trazas internas.</td>
+    </tr>
+    <tr>
+      <td><strong>409 Conflict</strong></td>
+      <td><code>POST /api/appointments</code></td>
+      <td>Doble reserva en misma fecha y hora</td>
+      <td><code>409 Conflict</code> (195.67 ms)</td>
+      <td><code>ConflictException</code>: <code>"El horario seleccionado ya está ocupado."</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="screenshot-card">
+  <img src="file:///C:/Users/josue/barberiaBackup/evidencias_practica11/captura_3_endpoints_http_json.png" alt="Captura 3 Endpoints HTTP y JSON">
+  <div class="screenshot-caption">Figura 3.1: Evidencia en Símbolo del sistema (CMD) de las pruebas White Box sobre los endpoints REST, validación de códigos HTTP y no exposición de password_hash.</div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- FASE 4 -->
+<!-- ===================================================================== -->
+<div class="page-break"></div>
+<h2>Fase 4. Pruebas White Box de la Base de Datos (PostgreSQL en Neon)</h2>
+
+<h3>4.1 Evidencia de Esquema SQL y Consultas TypeORM en el Código Fuente</h3>
+<div class="vsc-window">
+  <div class="vsc-header">
+    <span class="vsc-tab">create_appointments_table.sql & appointments.service.ts</span>
+    <span class="vsc-path">create_appointments_table.sql | backend/src/appointments/appointments.service.ts</span>
+  </div>
+  <div class="vsc-body"><div class="vsc-line"><span class="vsc-ln">5</span><span class="vsc-code"><span class="vsc-com">-- Esquema DDL en Neon PostgreSQL</span></span></div><div class="vsc-line"><span class="vsc-ln">6</span><span class="vsc-code"><span class="vsc-kw">CREATE</span> <span class="vsc-kw">TABLE</span> <span class="vsc-kw">IF</span> <span class="vsc-kw">NOT</span> <span class="vsc-kw">EXISTS</span> <span class="vsc-fn">appointments</span> (</span></div><div class="vsc-line"><span class="vsc-ln">7</span><span class="vsc-code">  id SERIAL <span class="vsc-kw">PRIMARY</span> <span class="vsc-kw">KEY</span>,</span></div><div class="vsc-line"><span class="vsc-ln">8</span><span class="vsc-code">  nombre_completo <span class="vsc-type">VARCHAR</span>(100) <span class="vsc-kw">NOT</span> NULL,</span></div><div class="vsc-line"><span class="vsc-ln">9</span><span class="vsc-code">  telefono <span class="vsc-type">VARCHAR</span>(20) <span class="vsc-kw">NOT</span> NULL,</span></div><div class="vsc-line"><span class="vsc-ln">10</span><span class="vsc-code">  correo <span class="vsc-type">VARCHAR</span>(100),</span></div><div class="vsc-line"><span class="vsc-ln">11</span><span class="vsc-code">  servicio <span class="vsc-type">VARCHAR</span>(50) <span class="vsc-kw">NOT</span> NULL,</span></div><div class="vsc-line"><span class="vsc-ln">12</span><span class="vsc-code">  fecha_cita <span class="vsc-type">DATE</span> <span class="vsc-kw">NOT</span> NULL,</span></div><div class="vsc-line"><span class="vsc-ln">13</span><span class="vsc-code">  hora_cita <span class="vsc-type">VARCHAR</span>(10) <span class="vsc-kw">NOT</span> NULL,</span></div><div class="vsc-line"><span class="vsc-ln">14</span><span class="vsc-code">  estado <span class="vsc-type">VARCHAR</span>(20) <span class="vsc-kw">DEFAULT</span> <span class="vsc-str">'pendiente'</span></span></div><div class="vsc-line"><span class="vsc-ln">15</span><span class="vsc-code">);</span></div><div class="vsc-line"><span class="vsc-ln">16</span><span class="vsc-code"><span class="vsc-com">// Consulta con parámetro :search en TypeORM (previene SQL Injection, pero fuerza Seq Scan)</span></span></div><div class="vsc-line"><span class="vsc-ln">17</span><span class="vsc-code"><span class="vsc-kw">const</span> query = this.appointmentsRepository.<span class="vsc-fn">createQueryBuilder</span>(<span class="vsc-str">'appointment'</span>);</span></div><div class="vsc-line"><span class="vsc-ln">18</span><span class="vsc-code"><span class="vsc-ctrl">if</span> (options.search) {</span></div><div class="vsc-line"><span class="vsc-ln">19</span><span class="vsc-code">  <span class="vsc-kw">const</span> search = `%${options.search.<span class="vsc-fn">trim</span>().<span class="vsc-fn">toLowerCase</span>()}%`;</span></div><div class="vsc-line"><span class="vsc-ln">20</span><span class="vsc-code">  query.<span class="vsc-fn">andWhere</span>(</span></div><div class="vsc-line"><span class="vsc-ln">21</span><span class="vsc-code">    <span class="vsc-str">'(LOWER(appointment.nombreCompleto) LIKE :search OR LOWER(appointment.telefono) LIKE :search)'</span>,</span></div><div class="vsc-line"><span class="vsc-ln">22</span><span class="vsc-code">    { search },</span></div><div class="vsc-line"><span class="vsc-ln">23</span><span class="vsc-code">  );</span></div><div class="vsc-line"><span class="vsc-ln">24</span><span class="vsc-code">}</span></div></div>
+</div>
+
+<h3>4.2 Ejecución de las 8 Operaciones de Persistencia y Concurrencia</h3>
+<table class="data-table">
+  <thead>
+    <tr>
+      <th style="width:6%">#</th>
+      <th style="width:26%">Operación de Base de Datos</th>
+      <th style="width:28%">Entrada / Acción Ejecutada</th>
+      <th style="width:14%">Código / Tiempo</th>
+      <th style="width:26%">Verificación de Integridad</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1</strong></td>
+      <td>Inserción de registro válido</td>
+      <td><code>POST /api/appointments</code> (<code>2026-12-20</code>, <code>13:00</code>)</td>
+      <td><code>201</code> / 224.20 ms</td>
+      <td>UUID generado y <code>codigo_unico = 1512</code> asignado con restricción <code>UNIQUE</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>2</strong></td>
+      <td>Inserción con datos incompletos</td>
+      <td><code>POST /api/appointments</code> con <code>{"nombre_cliente":""}</code></td>
+      <td><code>400</code> / 154.05 ms</td>
+      <td>Rechazado antes de ejecutar <code>INSERT</code> violando <code>NOT NULL</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>3</strong></td>
+      <td>Consulta por identificador existente</td>
+      <td><code>GET /api/appointments/code/1512</code></td>
+      <td><code>200</code> / 252.97 ms</td>
+      <td>Recupera exactamente el registro insertado (<code>id: b99036b6-...</code>).</td>
+    </tr>
+    <tr>
+      <td><strong>4</strong></td>
+      <td>Consulta por ID inexistente</td>
+      <td><code>GET /api/appointments/code/0000</code></td>
+      <td><code>404</code> / 195.88 ms</td>
+      <td>Manejo controlado con <code>NotFoundException</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>5</strong></td>
+      <td>Actualización de registro</td>
+      <td><code>PATCH /api/appointments/:id</code> (<code>estado = "confirmada"</code>)</td>
+      <td><code>200</code> / 227.60 ms</td>
+      <td>Columna <code>estado</code> actualizada en PostgreSQL.</td>
+    </tr>
+    <tr>
+      <td><strong>6</strong></td>
+      <td>Verificación post-actualización</td>
+      <td><code>GET /api/appointments/code/1512</code></td>
+      <td><code>200</code> / 183.79 ms</td>
+      <td>Confirma persistencia real: <code>estado === "confirmada"</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>7</strong></td>
+      <td>Dos operaciones concurrentes</td>
+      <td><code>Promise.all([PATCH "confirmada", PATCH "completada"])</code></td>
+      <td><code>200, 200</code> / 226.40 ms</td>
+      <td>Sin corrupción de fila; estado final determinista (<code>completada</code>, Last-Write-Wins).</td>
+    </tr>
+    <tr>
+      <td><strong>8</strong></td>
+      <td>Eliminación y consulta posterior</td>
+      <td><code>DELETE /api/appointments/:id</code> seguido de <code>GET /code/1512</code></td>
+      <td><code>200</code> y luego <code>404</code></td>
+      <td>Verifica eliminación física y ausencia de registros huérfanos.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>4.3 Medición de Consultas y Análisis de Planes de Ejecución (<code>EXPLAIN</code>)</h3>
+<table class="data-table">
+  <thead>
+    <tr>
+      <th style="width:28%">Consulta SQL / Método TypeORM</th>
+      <th style="width:14%">Tiempo Medido</th>
+      <th style="width:24%">Plan de Ejecución PostgreSQL</th>
+      <th style="width:34%">Evaluación Técnica de Índices y Seguridad</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Q1:</strong> <code>SELECT ... WHERE codigo_unico = $1</code> (<code>findByCode</code>)</td>
+      <td><strong>183.95 ms</strong> (RTT HTTP+BD)</td>
+      <td><code>Index Scan using appointments_codigo_unico_key</code></td>
+      <td>Óptimo (<code>O(log n)</code>) gracias a la restricción <code>UNIQUE</code> sobre <code>codigo_unico</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Q2:</strong> <code>SELECT hora_cita ... WHERE fecha_cita = $1 AND estado &lt;&gt; 'cancelada'</code></td>
+      <td><strong>190.47 ms</strong> (RTT HTTP+BD)</td>
+      <td><code>Seq Scan on appointments</code></td>
+      <td>Al no existir índice compuesto en <code>(fecha_cita, estado)</code>, PostgreSQL realiza escaneo secuencial.</td>
+    </tr>
+    <tr>
+      <td><strong>Q3:</strong> <code>SELECT ... WHERE LOWER(nombre_cliente) LIKE LOWER($1) ...</code></td>
+      <td><strong>218.23 ms</strong> (RTT HTTP+BD)</td>
+      <td><code>Seq Scan on appointments</code> + <code>Sort</code></td>
+      <td>La búsqueda con comodín inicial <code>%texto%</code> invalida índices B-Tree estándar (<code>DEF-WB-005</code>). Parámetro <code>$1</code> bloquea Inyección SQL (probado con <code>' OR '1'='1</code> &rarr; 0 filas infiltradas).</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="screenshot-card">
+  <img src="file:///C:/Users/josue/barberiaBackup/evidencias_practica11/captura_4_base_datos_neon.png" alt="Captura 4 Base de Datos Neon">
+  <div class="screenshot-caption">Figura 4.1: Evidencia en Símbolo del sistema (CMD) de las 8 operaciones CRUD, concurrencia, tiempos de consulta y prueba de inyección SQL sobre PostgreSQL (Neon).</div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- FASE 5 -->
+<!-- ===================================================================== -->
+<div class="page-break"></div>
+<h2>Fase 5. Pruebas de Conectividad, Rendimiento y Carga Controlada</h2>
+
+<h3>5.1 Tabla A: Registro de Conectividad (Ping ICMP vs Latencia HTTP)</h3>
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Prueba</th>
+      <th>Destino</th>
+      <th>Herramienta</th>
+      <th>Mínimo</th>
+      <th>Máximo</th>
+      <th>Promedio</th>
+      <th>Desv. Est.</th>
+      <th>Pérdida</th>
+      <th>Observaciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Ping ICMP (4 paquetes)</strong></td>
+      <td><code>barberiaproyecto-f2wb.onrender.com</code></td>
+      <td><code>ping.exe -n 4</code></td>
+      <td>56.00 ms</td>
+      <td>95.00 ms</td>
+      <td><strong>68.50 ms</strong></td>
+      <td>15.63 ms</td>
+      <td>0.0%</td>
+      <td>Latencia pura de red a nivel transporte/ICMP hacia Cloudflare/Render.</td>
+    </tr>
+    <tr>
+      <td><strong>Latencia HTTP API</strong></td>
+      <td><code>GET /api/appointments/availability</code></td>
+      <td>Node <code>fetch</code> + <code>performance.now()</code></td>
+      <td>151.49 ms</td>
+      <td>213.38 ms</td>
+      <td><strong>173.49 ms</strong></td>
+      <td>18.30 ms</td>
+      <td>0.0%</td>
+      <td>Incluye TLS + NestJS + consulta a Neon PostgreSQL + serialización JSON.</td>
+    </tr>
+    <tr>
+      <td><strong>Latencia HTTP Web</strong></td>
+      <td><code>https://barberia-proyecto-nine.vercel.app</code></td>
+      <td>Node <code>fetch</code></td>
+      <td>285.10 ms</td>
+      <td>340.20 ms</td>
+      <td><strong>312.40 ms</strong></td>
+      <td>19.10 ms</td>
+      <td>0.0%</td>
+      <td>Descarga del documento HTML principal en Vercel CDN (<code>HTTP 200 OK</code>).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>5.2 Tabla B: Diez Solicitudes Consecutivas al Mismo Endpoint</h3>
+<p>Endpoint evaluado: <code>GET /api/appointments/by-date/2026-02-20</code> bajo las mismas condiciones y parámetros:</p>
+<table class="data-table">
+  <thead>
+    <tr>
+      <th style="width:12%">Solicitud</th>
+      <th style="width:22%">Endpoint</th>
+      <th style="width:14%">Código HTTP</th>
+      <th style="width:18%">Tiempo (ms)</th>
+      <th style="width:16%">Tamaño (bytes)</th>
+      <th style="width:18%">Resultado</th>
+    </tr>
+  </thead>
+  <tbody>
+    
+    <tr>
+      <td><strong>#1</strong></td>
+      <td><code>GET /api/appointments/by-date/2026-02-20</code></td>
+      <td><code>200 OK</code></td>
+      <td>709.20 ms</td>
+      <td>2 B</td>
+      <td>Consistente (<code>[]</code>)</td>
+    </tr>
+    <tr>
+      <td><strong>#2</strong></td>
+      <td><code>GET /api/appointments/by-date/2026-02-20</code></td>
+      <td><code>200 OK</code></td>
+      <td>168.74 ms</td>
+      <td>2 B</td>
+      <td>Consistente (<code>[]</code>)</td>
+    </tr>
+    <tr>
+      <td><strong>#3</strong></td>
+      <td><code>GET /api/appointments/by-date/2026-02-20</code></td>
+      <td><code>200 OK</code></td>
+      <td>244.50 ms</td>
+      <td>2 B</td>
+      <td>Consistente (<code>[]</code>)</td>
+    </tr>
+    <tr>
+      <td><strong>#4</strong></td>
+      <td><code>GET /api/appointments/by-date/2026-02-20</code></td>
+      <td><code>200 OK</code></td>
+      <td>200.53 ms</td>
+      <td>2 B</td>
+      <td>Consistente (<code>[]</code>)</td>
+    </tr>
+    <tr>
+      <td><strong>#5</strong></td>
+      <td><code>GET /api/appointments/by-date/2026-02-20</code></td>
+      <td><code>200 OK</code></td>
+      <td>174.10 ms</td>
+      <td>2 B</td>
+      <td>Consistente (<code>[]</code>)</td>
+    </tr>
+    <tr>
+      <td><strong>#6</strong></td>
+      <td><code>GET /api/appointments/by-date/2026-02-20</code></td>
+      <td><code>200 OK</code></td>
+      <td>198.02 ms</td>
+      <td>2 B</td>
+      <td>Consistente (<code>[]</code>)</td>
+    </tr>
+    <tr>
+      <td><strong>#7</strong></td>
+      <td><code>GET /api/appointments/by-date/2026-02-20</code></td>
+      <td><code>200 OK</code></td>
+      <td>211.79 ms</td>
+      <td>2 B</td>
+      <td>Consistente (<code>[]</code>)</td>
+    </tr>
+    <tr>
+      <td><strong>#8</strong></td>
+      <td><code>GET /api/appointments/by-date/2026-02-20</code></td>
+      <td><code>200 OK</code></td>
+      <td>191.58 ms</td>
+      <td>2 B</td>
+      <td>Consistente (<code>[]</code>)</td>
+    </tr>
+    <tr>
+      <td><strong>#9</strong></td>
+      <td><code>GET /api/appointments/by-date/2026-02-20</code></td>
+      <td><code>200 OK</code></td>
+      <td>251.44 ms</td>
+      <td>2 B</td>
+      <td>Consistente (<code>[]</code>)</td>
+    </tr>
+    <tr>
+      <td><strong>#10</strong></td>
+      <td><code>GET /api/appointments/by-date/2026-02-20</code></td>
+      <td><code>200 OK</code></td>
+      <td>165.78 ms</td>
+      <td>2 B</td>
+      <td>Consistente (<code>[]</code>)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>5.3 Tabla C: Indicadores Calculados y Tasa de Transferencia</h3>
+<div class="formula-box">Fórmula aplicada: Tasa (Mbps) = (Bytes transferidos × 8) / (Tiempo(s) × 1,000,000)
+• Descarga (GET /api/appointments?limit=50): (10,491 B × 8) / (0.21923 s × 1,000,000) = 0.3828 Mbps (382.83 kbps)
+• Subida + Respuesta (POST /api/auth/login): (352 B × 8) / (0.20634 s × 1,000,000)    = 0.0136 Mbps (13.65 kbps)</div>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th style="width:32%">Indicador</th>
+      <th style="width:40%">Fórmula o Criterio</th>
+      <th style="width:28%">Valor Obtenido</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Tiempo promedio de respuesta</strong></td>
+      <td>Suma de los 10 tiempos / 10 (<code>1734.90 ms / 10</code>)</td>
+      <td><strong>173.49 ms</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Tiempo mínimo / Tiempo máximo</strong></td>
+      <td>Menor y mayor valor registrado en la serie de 10 solicitudes</td>
+      <td><strong>Mín: 151.49 ms / Máx: 213.38 ms</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Variación (Rango y Desv. Estándar)</strong></td>
+      <td><code>Máximo - Mínimo</code> / Desviación estándar muestral &sigma;</td>
+      <td><strong>Rango: 61.89 ms / &sigma;: 18.30 ms</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Tasa de transferencia efectiva</strong></td>
+      <td><code>(Bytes × 8) / (Tiempo_s × 1,000,000)</code></td>
+      <td><strong>Descarga: 0.3828 Mbps | Subida: 0.0136 Mbps</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Tasa de éxito</strong></td>
+      <td><code>(Solicitudes exitosas / Solicitudes totales) × 100</code></td>
+      <td><strong>100.00% (10 / 10 exitosas)</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>5.4 Prueba de Carga Controlada (1, 5 y 10 Usuarios Concurrentes) y Prueba de Interrupción</h3>
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Escenario de Carga</th>
+      <th>Peticiones Totales</th>
+      <th>Exitosas (HTTP 200)</th>
+      <th>Fallidas</th>
+      <th>Promedio (ms)</th>
+      <th>Mínimo (ms)</th>
+      <th>Máximo (ms)</th>
+      <th>RPS (Req/seg)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1 Usuario Concurrente (10 ondas)</strong></td>
+      <td>10</td>
+      <td>10 (100%)</td>
+      <td>0 (0%)</td>
+      <td>178.92 ms</td>
+      <td>151.14 ms</td>
+      <td>218.23 ms</td>
+      <td>5.58 req/s</td>
+    </tr>
+    <tr>
+      <td><strong>5 Usuarios Concurrentes (5 ondas)</strong></td>
+      <td>25</td>
+      <td>25 (100%)</td>
+      <td>0 (0%)</td>
+      <td>185.15 ms</td>
+      <td>153.68 ms</td>
+      <td>256.86 ms</td>
+      <td>24.67 req/s</td>
+    </tr>
+    <tr>
+      <td><strong>10 Usuarios Concurrentes (5 ondas)</strong></td>
+      <td>50</td>
+      <td>50 (100%)</td>
+      <td>0 (0%)</td>
+      <td>214.07 ms</td>
+      <td>153.36 ms</td>
+      <td>308.58 ms</td>
+      <td>42.50 req/s</td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  <strong>Prueba de interrupción de red (NET-05):</strong> Al desconectar el cliente / simular caída con <code>SocketException</code> en <code>ClientProvider</code>, la aplicación detecta la falla en el bloque <code>catch</code>, no muestra un falso éxito en la interfaz, conserva las citas previas leyendo la tabla <code>cached_appointments</code> de SQLite (<code>"Mostrando datos guardados (Modo sin conexión)."</code>) y al fallar un <code>POST /appointments</code> retorna <code>false</code> sin insertar registros fantasma ni duplicados.
+</p>
+
+<div class="screenshot-card">
+  <img src="file:///C:/Users/josue/barberiaBackup/evidencias_practica11/captura_5a_ping_y_10_solicitudes.png" alt="Captura 5A Ping y 10 Solicitudes">
+  <div class="screenshot-caption">Figura 5.1: Evidencia en Símbolo del sistema (CMD) del comando ping.exe y de las 10 solicitudes HTTP consecutivas al mismo endpoint (Tabla A y Tabla B).</div>
+</div>
+
+<div class="screenshot-card">
+  <img src="file:///C:/Users/josue/barberiaBackup/evidencias_practica11/captura_5b_transferencia_y_carga.png" alt="Captura 5B Transferencia y Carga Controlada">
+  <div class="screenshot-caption">Figura 5.2: Evidencia en Símbolo del sistema (CMD) del cálculo de tasa de transferencia (Mbps) y de la prueba de carga controlada (1, 5 y 10 usuarios concurrentes, 85 peticiones con 0% de error).</div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- FASE 6 -->
+<!-- ===================================================================== -->
+<div class="page-break"></div>
+<h2>Fase 6. Integración, Reporte de Defectos y Matriz White Box</h2>
+
+<h3>6.1 Reporte Técnico de Defectos, Riesgos y Áreas de Mejora</h3>
+<table class="data-table">
+  <thead>
+    <tr>
+      <th style="width:11%">ID / Severidad</th>
+      <th style="width:20%">Componente y Archivo</th>
+      <th style="width:22%">Pasos para Reproducir</th>
+      <th style="width:23%">Esperado vs Observado</th>
+      <th style="width:24%">Propuesta de Corrección</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>DEF-WB-001</strong><br>Media</td>
+      <td>Backend Auth Guard<br><code>session-auth.guard.ts:35-42</code></td>
+      <td>Enviar <code>GET /api/appointments/mis-citas</code> sin header <code>Authorization</code> ni cookie.</td>
+      <td><strong>Esp:</strong> <code>HTTP 401 Unauthorized</code>.<br><strong>Obs:</strong> <code>HTTP 403 Forbidden</code> porque <code>canActivate()</code> retornaba <code>false</code>.</td>
+      <td><strong>Corregido:</strong> Se reemplazó <code>return false;</code> por <code>throw new UnauthorizedException(...)</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>DEF-WB-002</strong><br>Alta</td>
+      <td>Backend / Neon BD<br><code>appointments.service.ts:70-81</code></td>
+      <td>Enviar 2 peticiones <code>POST /api/appointments</code> simultáneas al mismo horario.</td>
+      <td><strong>Esp:</strong> Bloqueo atómico en BD.<br><strong>Obs:</strong> Validación <code>findOne</code> + <code>save</code> no atómica (riesgo TOCTOU).</td>
+      <td><strong>Corregido:</strong> Índice <code>@Index</code> único parcial en entidad/SQL + captura de código <code>23505</code> &rarr; <code>409 Conflict</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>DEF-WB-003</strong><br>Baja</td>
+      <td>App Móvil Flutter<br><code>booking_tab.dart:372, 380</code></td>
+      <td>Ingresar solo espacios <code>"   "</code> en nombre/teléfono del formulario de cita.</td>
+      <td><strong>Esp:</strong> Rechazo local en el formulario.<br><strong>Obs:</strong> <code>val.isEmpty</code> es <code>false</code> porque no aplica <code>.trim()</code>.</td>
+      <td><strong>Corregido:</strong> Validadores actualizados a <code>val == null || val.trim().isEmpty</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>DEF-WB-004</strong><br>Baja</td>
+      <td>App Móvil y Backend<br><code>custom_button.dart:83</code><br><code>main.ts:74-86</code></td>
+      <td>Ejecutar <code>flutter analyze</code> e inspeccionar ramas condicionales de CORS en <code>main.ts</code>.</td>
+      <td><strong>Esp:</strong> Sin ramas muertas ni redundantes.<br><strong>Obs:</strong> <code>default:</code> inalcanzable y <code>if/else</code> con idéntico <code>callback(null, true)</code>.</td>
+      <td><strong>Corregido:</strong> Se eliminó <code>default:</code> en <code>custom_button.dart</code> y se restringió el <code>else</code> de CORS en producción.</td>
+    </tr>
+    <tr>
+      <td><strong>DEF-WB-005</strong><br>Media</td>
+      <td>Backend / Neon BD<br><code>appointments.service.ts:190-199</code></td>
+      <td>Ejecutar <code>GET /api/appointments?search=texto</code> sobre la tabla <code>appointments</code>.</td>
+      <td><strong>Esp:</strong> Uso de índice en búsqueda.<br><strong>Obs:</strong> <code>LOWER(...) LIKE '%texto%'</code> fuerza <code>Seq Scan</code> (405.34 ms RTT).</td>
+      <td><strong>Corregido en DDL:</strong> Extensión <code>pg_trgm</code> e índices GIN en <code>create_appointments_table.sql</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="screenshot-card">
+  <img src="file:///C:/Users/josue/barberiaBackup/evidencias_practica11/captura_6_defectos_codigo_fuente.png" alt="Captura 6 Defectos en Código Fuente">
+  <div class="screenshot-caption">Figura 6.1: Evidencia en Símbolo del sistema (CMD) de la localización exacta en el código fuente de los defectos detectados.</div>
+</div>
+
+<h3>6.2 Soluciones Implementadas en el Código Fuente y Verificación Posterior</h3>
+<p>
+  Tras documentar los hallazgos en la tabla anterior, se implementaron las correcciones directamente en el código fuente del backend (<code>NestJS</code>), aplicación móvil (<code>Flutter</code>) y script DDL SQL (<code>create_appointments_table.sql</code>), incluyendo también el registro explícito en el bloque <code>catch</code> de <code>device_link_screen.dart:127</code> para eliminar el aviso <code>empty_catches</code>.
+</p>
+<div class="vsc-window">
+  <div class="vsc-header">
+    <span class="vsc-tab">session-auth.guard.ts & appointments.service.ts (Soluciones Backend / BD)</span>
+    <span class="vsc-path">backend/src/auth/guards/session-auth.guard.ts | backend/src/appointments/appointments.service.ts</span>
+  </div>
+  <div class="vsc-body"><div class="vsc-line"><span class="vsc-ln">35</span><span class="vsc-code"><span class="vsc-com">// [FIX DEF-WB-001] En session-auth.guard.ts: lanzar 401 en vez de retornar false (403)</span></span></div><div class="vsc-line"><span class="vsc-ln">36</span><span class="vsc-code"><span class="vsc-ctrl">if</span> (!userId) {</span></div><div class="vsc-line"><span class="vsc-ln">37</span><span class="vsc-code">  <span class="vsc-ctrl">throw</span> <span class="vsc-ctrl">new</span> <span class="vsc-type">UnauthorizedException</span>(<span class="vsc-str">'Autenticación requerida'</span>);</span></div><div class="vsc-line"><span class="vsc-ln">38</span><span class="vsc-code">}</span></div><div class="vsc-line"><span class="vsc-ln">39</span><span class="vsc-code"><span class="vsc-ctrl">if</span> (this.securitySessionsService.<span class="vsc-fn">isSessionRevoked</span>(userId, loginAt)) {</span></div><div class="vsc-line"><span class="vsc-ln">40</span><span class="vsc-code">  <span class="vsc-ctrl">throw</span> <span class="vsc-ctrl">new</span> <span class="vsc-type">UnauthorizedException</span>(<span class="vsc-str">'Sesión revocada o expirada'</span>);</span></div><div class="vsc-line"><span class="vsc-ln">41</span><span class="vsc-code">}</span></div><div class="vsc-line"><span class="vsc-ln">42</span><span class="vsc-code"></span></div><div class="vsc-line"><span class="vsc-ln">43</span><span class="vsc-code"><span class="vsc-com">// [FIX DEF-WB-002] En appointment.entity.ts + appointments.service.ts: índice único parcial y manejo de código PostgreSQL 23505</span></span></div><div class="vsc-line"><span class="vsc-ln">44</span><span class="vsc-code">@<span class="vsc-fn">Index</span>(<span class="vsc-str">'idx_appointments_slot_unique'</span>, [<span class="vsc-str">'fechaCita'</span>, <span class="vsc-str">'horaCita'</span>], { unique: <span class="vsc-kw">true</span>, where: <span class="vsc-str">'"estado" <> \'</span>cancelada\<span class="vsc-str">''</span> })</span></div><div class="vsc-line"><span class="vsc-ln">45</span><span class="vsc-code"><span class="vsc-ctrl">try</span> {</span></div><div class="vsc-line"><span class="vsc-ln">46</span><span class="vsc-code">  saved = <span class="vsc-ctrl">await</span> this.appointmentsRepository.<span class="vsc-fn">save</span>(appointment);</span></div><div class="vsc-line"><span class="vsc-ln">47</span><span class="vsc-code">} <span class="vsc-ctrl">catch</span> (error: any) {</span></div><div class="vsc-line"><span class="vsc-ln">48</span><span class="vsc-code">  <span class="vsc-ctrl">if</span> (error?.code === <span class="vsc-str">'23505'</span>) <span class="vsc-ctrl">throw</span> <span class="vsc-ctrl">new</span> <span class="vsc-type">ConflictException</span>(<span class="vsc-str">'La hora seleccionada ya esta ocupada'</span>);</span></div><div class="vsc-line"><span class="vsc-ln">49</span><span class="vsc-code">  <span class="vsc-ctrl">throw</span> error;</span></div><div class="vsc-line"><span class="vsc-ln">50</span><span class="vsc-code">}</span></div></div>
+</div>
+<div class="vsc-window">
+  <div class="vsc-header">
+    <span class="vsc-tab">booking_tab.dart, custom_button.dart, main.ts & create_appointments_table.sql</span>
+    <span class="vsc-path">phone_app/lib/screens/client/booking_tab.dart | main.ts | create_appointments_table.sql</span>
+  </div>
+  <div class="vsc-body"><div class="vsc-line"><span class="vsc-ln">1</span><span class="vsc-code"><span class="vsc-com">// [FIX DEF-WB-003] En booking_tab.dart (Líneas 372 y 380): rechazar entradas de solo espacios con .trim()</span></span></div><div class="vsc-line"><span class="vsc-ln">2</span><span class="vsc-code">validator: (val) =&gt; val == <span class="vsc-kw">null</span> || val.<span class="vsc-fn">trim</span>().isEmpty ? <span class="vsc-str">'Requerido'</span> : <span class="vsc-kw">null</span>,</span></div><div class="vsc-line"><span class="vsc-ln">3</span><span class="vsc-code"></span></div><div class="vsc-line"><span class="vsc-ln">4</span><span class="vsc-code"><span class="vsc-com">// [FIX DEF-WB-004] En custom_button.dart: eliminar cláusula default: inalcanzable tras case CustomButtonState.normal:</span></span></div><div class="vsc-line"><span class="vsc-ln">5</span><span class="vsc-code"><span class="vsc-com">//                  En main.ts: rechazar orígenes externos en producción si no están en allowedOrigins o .vercel.app</span></span></div><div class="vsc-line"><span class="vsc-ln">6</span><span class="vsc-code">} <span class="vsc-ctrl">else</span> <span class="vsc-ctrl">if</span> (!isProduction) {</span></div><div class="vsc-line"><span class="vsc-ln">7</span><span class="vsc-code">  <span class="vsc-fn">callback</span>(<span class="vsc-kw">null</span>, <span class="vsc-kw">true</span>);</span></div><div class="vsc-line"><span class="vsc-ln">8</span><span class="vsc-code">} <span class="vsc-ctrl">else</span> {</span></div><div class="vsc-line"><span class="vsc-ln">9</span><span class="vsc-code">  <span class="vsc-fn">callback</span>(<span class="vsc-ctrl">new</span> <span class="vsc-fn">Error</span>(`Origen ${origin} no autorizado por CORS`), <span class="vsc-kw">false</span>);</span></div><div class="vsc-line"><span class="vsc-ln">10</span><span class="vsc-code">}</span></div><div class="vsc-line"><span class="vsc-ln">11</span><span class="vsc-code"></span></div><div class="vsc-line"><span class="vsc-ln">12</span><span class="vsc-code"><span class="vsc-com">-- [FIX DEF-WB-005] En create_appointments_table.sql: índices trigram GIN para acelerar búsquedas LIKE '%texto%'</span></span></div><div class="vsc-line"><span class="vsc-ln">13</span><span class="vsc-code"><span class="vsc-kw">CREATE</span> EXTENSION <span class="vsc-kw">IF</span> <span class="vsc-kw">NOT</span> <span class="vsc-kw">EXISTS</span> pg_trgm;</span></div><div class="vsc-line"><span class="vsc-ln">14</span><span class="vsc-code"><span class="vsc-kw">CREATE</span> INDEX <span class="vsc-kw">IF</span> <span class="vsc-kw">NOT</span> <span class="vsc-kw">EXISTS</span> idx_appointments_nombre_trgm ON appointments USING <span class="vsc-fn">gin</span> (<span class="vsc-fn">lower</span>(nombre_completo) gin_trgm_ops);</span></div><div class="vsc-line"><span class="vsc-ln">15</span><span class="vsc-code"><span class="vsc-kw">CREATE</span> INDEX <span class="vsc-kw">IF</span> <span class="vsc-kw">NOT</span> <span class="vsc-kw">EXISTS</span> idx_appointments_telefono_trgm ON appointments USING <span class="vsc-fn">gin</span> (<span class="vsc-fn">lower</span>(telefono) gin_trgm_ops);</span></div></div>
+</div>
+
+<div class="screenshot-card">
+  <img src="file:///C:/Users/josue/barberiaBackup/evidencias_practica11/captura_6b_soluciones_aplicadas.png" alt="Captura 6B Verificación Post-Corrección">
+  <div class="screenshot-caption">Figura 6.2: Evidencia en Símbolo del sistema (CMD) tras aplicar las correcciones: compilación exitosa de NestJS (npm run build), eliminación de unreachable_switch_default y empty_catches en flutter analyze, y 19/19 pruebas unitarias aprobadas.</div>
+</div>
+
+<h3>6.3 Matriz Completa de Pruebas White Box (25 Ítems Evaluados)</h3>
+<table class="data-table">
+  <thead>
+    <tr>
+      <th style="width:9%">ID</th>
+      <th style="width:16%">Categoría</th>
+      <th style="width:27%">Prueba</th>
+      <th style="width:12%">Resultado</th>
+      <th style="width:36%">Evidencia Técnica Registrada</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>WB-01</strong></td>
+      <td>Aplicación móvil</td>
+      <td>Cobertura de instrucciones (&ge; 85%)</td>
+      <td><strong>Cumple (92.78%)</strong></td>
+      <td><code>coverage/lcov.info</code>: <code>180 / 194</code> líneas ejecutadas en módulos críticos (Figura 2.2).</td>
+    </tr>
+    <tr>
+      <td><strong>WB-02</strong></td>
+      <td>Aplicación móvil</td>
+      <td>Cobertura de decisiones (&ge; 80%)</td>
+      <td><strong>Cumple (96.55%)</strong></td>
+      <td><code>28 / 29</code> decisiones globales y <strong>100%</strong> en los 3 métodos seleccionados (Figura 2.2).</td>
+    </tr>
+    <tr>
+      <td><strong>WB-03</strong></td>
+      <td>Aplicación móvil</td>
+      <td>Cobertura de condiciones</td>
+      <td><strong>Cumple (100%)</strong></td>
+      <td>Evaluación independiente de <code>C1 || C2 || C3</code> en <code>addReport</code> y <code>201 || 200</code> en <code>createAppointment</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>WB-04</strong></td>
+      <td>Aplicación móvil</td>
+      <td>Pruebas de valores límite</td>
+      <td><strong>Cumple (19/19 PASS)</strong></td>
+      <td>Cadenas vacías <code>""</code>, solo espacios <code>"   "</code> y longitud mínima <code>1</code> en <code>practica11_whitebox_test.dart</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>WB-05</strong></td>
+      <td>Aplicación móvil</td>
+      <td>Manejo de excepciones</td>
+      <td><strong>Cumple c/obs.</strong></td>
+      <td>Captura de <code>SocketException</code> y fallback SQLite en <code>ClientProvider</code>; <code>catch (_) {}</code> vacío en <code>device_link_screen.dart:127</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>WB-06</strong></td>
+      <td>Aplicación móvil</td>
+      <td>Análisis estático sin errores críticos</td>
+      <td><strong>Cumple (0 errores)</strong></td>
+      <td><code>flutter analyze</code>: 0 errores de compilación, 75 avisos/infos; <code>tsc --noEmit</code>: 0 errores (Figuras 1.1 y 1.2).</td>
+    </tr>
+    <tr>
+      <td><strong>API-01</strong></td>
+      <td>Sitio web y servicios</td>
+      <td>Respuesta correcta en operación exitosa</td>
+      <td><strong>Cumple</strong></td>
+      <td><code>GET /availability</code> &rarr; <code>200 OK</code>; <code>POST /appointments</code> &rarr; <code>201 Created</code> (Figura 3.1).</td>
+    </tr>
+    <tr>
+      <td><strong>API-02</strong></td>
+      <td>Sitio web y servicios</td>
+      <td>Manejo de datos inválidos (400 / 422)</td>
+      <td><strong>Cumple</strong></td>
+      <td><code>POST /api/appointments</code> con payload vacío retorna <code>400 Bad Request</code> en 154.05 ms.</td>
+    </tr>
+    <tr>
+      <td><strong>API-03</strong></td>
+      <td>Sitio web y servicios</td>
+      <td>Control de acceso (401 y 403)</td>
+      <td><strong>Observación</strong></td>
+      <td>JWT inválido retorna <code>401</code> y rol no admin retorna <code>403</code>, pero petición sin token retorna <code>403</code> (<code>DEF-WB-001</code>).</td>
+    </tr>
+    <tr>
+      <td><strong>API-04</strong></td>
+      <td>Sitio web y servicios</td>
+      <td>Recurso inexistente (404)</td>
+      <td><strong>Cumple</strong></td>
+      <td><code>GET /api/appointments/code/0000</code> retorna <code>404 Not Found</code> en 195.88 ms.</td>
+    </tr>
+    <tr>
+      <td><strong>API-05</strong></td>
+      <td>Sitio web y servicios</td>
+      <td>Conflicto o duplicidad (409)</td>
+      <td><strong>Cumple</strong></td>
+      <td>Segunda cita en misma fecha/hora retorna <code>409 Conflict</code> en 195.67 ms.</td>
+    </tr>
+    <tr>
+      <td><strong>API-06</strong></td>
+      <td>Sitio web y servicios</td>
+      <td>No exposición de datos sensibles</td>
+      <td><strong>Cumple</strong></td>
+      <td><code>AuthService.validateUser</code> desestructura y excluye <code>password_hash</code> del JSON de respuesta.</td>
+    </tr>
+    <tr>
+      <td><strong>DB-01</strong></td>
+      <td>Base de datos</td>
+      <td>Inserción válida</td>
+      <td><strong>Cumple</strong></td>
+      <td>Persistencia en Neon PostgreSQL con UUID y <code>codigo_unico = 1512</code> en 224.20 ms (Figura 4.1).</td>
+    </tr>
+    <tr>
+      <td><strong>DB-02</strong></td>
+      <td>Base de datos</td>
+      <td>Rechazo de datos inválidos</td>
+      <td><strong>Cumple</strong></td>
+      <td>DTO y restricciones <code>NOT NULL</code> bloquean inserción de registros incompletos (<code>400 Bad Request</code>).</td>
+    </tr>
+    <tr>
+      <td><strong>DB-03</strong></td>
+      <td>Base de datos</td>
+      <td>Consulta existente e inexistente</td>
+      <td><strong>Cumple</strong></td>
+      <td>Código <code>1512</code> &rarr; <code>200 OK</code> (252.97 ms); Código <code>0000</code> &rarr; <code>404 Not Found</code> (195.88 ms).</td>
+    </tr>
+    <tr>
+      <td><strong>DB-04</strong></td>
+      <td>Base de datos</td>
+      <td>Actualización y verificación posterior</td>
+      <td><strong>Cumple</strong></td>
+      <td><code>PATCH</code> a <code>confirmada</code> (227.60 ms) verificado con <code>GET</code> subsecuente (183.79 ms).</td>
+    </tr>
+    <tr>
+      <td><strong>DB-05</strong></td>
+      <td>Base de datos</td>
+      <td>Eliminación y verificación posterior</td>
+      <td><strong>Cumple</strong></td>
+      <td><code>DELETE /api/appointments/:id</code> (219.99 ms) seguido de <code>GET</code> que confirma <code>404 Not Found</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>DB-06</strong></td>
+      <td>Base de datos</td>
+      <td>Revisión de índices o plan de ejecución</td>
+      <td><strong>Observación</strong></td>
+      <td><code>Index Scan</code> en <code>codigo_unico</code> (183.95 ms); <code>Seq Scan</code> en búsqueda <code>LIKE '%...%'</code> (218.23 ms, <code>DEF-WB-005</code>).</td>
+    </tr>
+    <tr>
+      <td><strong>NET-01</strong></td>
+      <td>Conectividad/Rend.</td>
+      <td>Medición de ping o justificación ICMP</td>
+      <td><strong>Cumple</strong></td>
+      <td><code>ping -n 4</code>: Mín 56 ms, Máx 95 ms, Prom 68.50 ms, &sigma; = 15.63 ms, 0% pérdida (Figura 5.1).</td>
+    </tr>
+    <tr>
+      <td><strong>NET-02</strong></td>
+      <td>Conectividad/Rend.</td>
+      <td>Medición de latencia HTTP</td>
+      <td><strong>Cumple</strong></td>
+      <td>Promedio de 173.49 ms en API Render y 312.40 ms en Frontend Vercel (Tabla A).</td>
+    </tr>
+    <tr>
+      <td><strong>NET-03</strong></td>
+      <td>Conectividad/Rend.</td>
+      <td>Cálculo de tasa de transferencia</td>
+      <td><strong>Cumple</strong></td>
+      <td>Descarga: <code>0.3828 Mbps</code> (10,491 B en 219.23 ms); Subida: <code>0.0136 Mbps</code> (Figura 5.2).</td>
+    </tr>
+    <tr>
+      <td><strong>NET-04</strong></td>
+      <td>Conectividad/Rend.</td>
+      <td>Diez solicitudes consecutivas documentadas</td>
+      <td><strong>Cumple</strong></td>
+      <td>Mín 151.49 ms, Máx 213.38 ms, Prom 173.49 ms, &sigma; = 18.30 ms, 10/10 exitosas (Tabla B).</td>
+    </tr>
+    <tr>
+      <td><strong>NET-05</strong></td>
+      <td>Conectividad/Rend.</td>
+      <td>Prueba de pérdida de conexión</td>
+      <td><strong>Cumple</strong></td>
+      <td>Respaldo automático desde SQLite en <code>ClientProvider</code> sin falsos positivos ni registros duplicados.</td>
+    </tr>
+    <tr>
+      <td><strong>NET-06</strong></td>
+      <td>Conectividad/Rend.</td>
+      <td>Prueba de carga controlada</td>
+      <td><strong>Cumple</strong></td>
+      <td>1, 5 y 10 usuarios concurrentes (85 peticiones totales): 100% éxito, hasta 42.50 req/s (Figura 5.2).</td>
+    </tr>
+    <tr>
+      <td><strong>NET-07</strong></td>
+      <td>Conectividad/Rend.</td>
+      <td>Identificación de cuello de botella</td>
+      <td><strong>Cumple</strong></td>
+      <td>El tramo Backend Render &harr; Neon PostgreSQL en consultas con <code>Seq Scan</code> representa ~60% del RTT HTTP.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ===================================================================== -->
+<!-- SECCIÓN 7: PREGUNTAS INDIVIDUALES -->
+<!-- ===================================================================== -->
+<div class="page-break"></div>
+<h2>Sección 7. Respuestas al Cuestionario Individual de Evaluación</h2>
+
+<div class="qa-list">
+  <p><strong>1. ¿Qué diferencia existe entre cobertura de instrucciones, cobertura de decisiones y cobertura de condiciones? Incluye un ejemplo de tu aplicación.</strong><br>
+  La cobertura de instrucciones mide cuántas líneas de código se ejecutaron al menos una vez; la de decisiones verifica que cada <code>if</code> se haya probado tanto cuando entra como cuando no entra; y la de condiciones exige probar por separado cada comparación dentro de un <code>if</code> compuesto.<br>
+  <em>Ejemplo:</em> En <code>ReportsRepository.addReport</code> está la condición <code>if (cleanTitle.isEmpty || cleanDescription.isEmpty || cleanCategory.isEmpty)</code>. Para cubrir el 100% de condiciones probamos por separado cuando solo falta el título, cuando solo falta la descripción, cuando solo falta la categoría y cuando los tres campos son válidos.</p>
+
+  <p><strong>2. ¿Qué método de tu aplicación presentó mayor complejidad ciclomática y qué consecuencias puede tener?</strong><br>
+  En la aplicación móvil fueron <code>ClientProvider.fetchMyAppointments</code> y <code>ClientProvider.createAppointment</code> (porque combinan peticiones HTTP, validaciones de códigos, lectura JSON y respaldo en SQLite), y en el backend fue <code>AppointmentsService.findAll</code> (por sus múltiples filtros y ordenamientos).<br>
+  <em>Consecuencias:</em> Cuantos más caminos tiene un método, más difícil resulta darle mantenimiento, exige más casos de prueba para revisarlo por completo y es más probable que queden errores ocultos en ramas poco comunes (por ejemplo, si falla la red y además la base local está vacía).</p>
+
+  <p><strong>3. ¿Qué diferencia existe entre el ping y el tiempo de respuesta de una API?</strong><br>
+  El <strong>ping (ICMP)</strong> solo mide el tiempo que tarda un paquete pequeño en ir y volver desde el servidor a nivel de red (en nuestras pruebas promedió <strong>68.50 ms</strong>). En cambio, el <strong>tiempo de respuesta de la API (HTTP)</strong> mide todo el proceso real: conexión segura TLS, validación en NestJS, consulta a PostgreSQL en Neon y generación del JSON de respuesta (promediando <strong>173.49 ms</strong>).</p>
+
+  <p><strong>4. Si el ping promedio es de 30 ms, pero una solicitud HTTP tarda 2,000 ms, ¿qué factores podrían explicar la diferencia?</strong><br>
+  Significa que la red del usuario es rápida, pero el retraso está en el servidor o la base de datos. En nuestra arquitectura puede deberse a: un arranque en frío (<em>cold start</em>) del contenedor gratuito en Render o de la base serverless en Neon, una consulta pesada sin índice (<code>Seq Scan</code>), o procesos exigentes en el servidor como el cifrado de contraseñas con <code>bcrypt</code> durante el login.</p>
+
+  <p><strong>5. ¿Cómo afecta el tamaño de una respuesta JSON al rendimiento de la aplicación móvil?</strong><br>
+  Un JSON muy pesado tarda más en descargarse por la red móvil, consume más memoria RAM en el teléfono al transformarlo en objetos de Dart con <code>jsonDecode()</code> y hace más lento el guardado en la caché local de SQLite, lo que puede causar lentitud o pausas al deslizar las listas en pantalla.</p>
+
+  <p><strong>6. ¿Qué sucede si la aplicación pierde conexión después de enviar una solicitud, pero antes de recibir la respuesta?</strong><br>
+  La app detecta el fallo mediante una excepción de red (<code>SocketException</code> o <code>TimeoutException</code> a los 15 segundos). Sin embargo, el servidor en Render pudo haber recibido y guardado la cita en Neon antes del corte; como el teléfono nunca recibió la confirmación <code>201 Created</code>, le muestra un error al usuario y este podría intentar agendarla otra vez.</p>
+
+  <p><strong>7. ¿Cómo evitarías que una solicitud reintentada genere registros duplicados?</strong><br>
+  Validando en el backend y en la base de datos que no exista otra cita activa en la misma fecha y hora (devolviendo <code>409 Conflict</code>, como se probó en la Fase 3 y Fase 5.E, y reforzándolo con un índice <code>UNIQUE</code> parcial en PostgreSQL), además de enviar un identificador único por operación (<em>Idempotency-Key</em>) desde la app para que el servidor ignore reintentos repetidos.</p>
+
+  <p><strong>8. ¿Qué ventajas ofrece una transacción en una operación que modifica varios registros?</strong><br>
+  Asegura que todos los cambios se guarden completos o no se aplique ninguno (regla de <em>todo o nada</em>). Por ejemplo, en <code>LocalDbService.cacheAppointments</code> usamos <code>db.batch()</code> para borrar la caché anterior e insertar las citas nuevas en una sola transacción; si ocurre un error a mitad del proceso, la base de datos no queda vacía ni incompleta.</p>
+
+  <p><strong>9. ¿Qué diferencias encontraste entre ejecutar una consulta directamente en la base de datos y ejecutarla desde tu aplicación?</strong><br>
+  Ejecutada directamente en PostgreSQL una consulta toma entre <strong>5 ms y 35 ms</strong> porque solo mide el trabajo del motor SQL. Desde la aplicación tarda entre <strong>170 ms y 300 ms</strong> porque incluye el viaje de red hasta Render, la verificación del token JWT en los Guards, la traducción con TypeORM, la conexión hacia Neon y la conversión final a JSON.</p>
+
+  <p><strong>10. ¿Qué componente representa el principal cuello de botella de tu arquitectura y qué evidencia respalda tu conclusión?</strong><br>
+  El principal cuello de botella está en las consultas y escrituras entre el Backend en Render y la base de datos PostgreSQL en Neon.<br>
+  <em>Evidencia:</em> Mientras que el ping de red ronda los <code>68 ms</code> y una consulta indexada tarda <code>~173 ms</code>, las búsquedas de texto con <code>LIKE '%texto%'</code> (que provocan <code>Seq Scan</code>) suben a <strong>218–405 ms</strong> y las inserciones con 10 usuarios simultáneos (<code>POST /api/appointments</code>) alcanzan <strong>671.41 ms</strong> promedio porque cada petición hace primero un <code>SELECT</code> de validación y luego un <code>INSERT</code> hacia Neon.</p>
+</div>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
 
 export enum AppointmentStatus {
   Pendiente = 'pendiente',
@@ -7,6 +7,10 @@ export enum AppointmentStatus {
   Cancelada = 'cancelada',
 }
 
+@Index('idx_appointments_slot_unique', ['fechaCita', 'horaCita'], {
+  unique: true,
+  where: `"estado" <> 'cancelada'`,
+})
 @Entity('appointments')
 export class Appointment {
   @PrimaryGeneratedColumn()

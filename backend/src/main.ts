@@ -75,11 +75,14 @@ async function bootstrap() {
         !origin ||
         allowedOrigins.includes(origin) ||
         origin.includes('localhost') ||
-        origin.includes('127.0.0.1')
+        origin.includes('127.0.0.1') ||
+        origin.endsWith('.vercel.app')
       ) {
         callback(null, true);
-      } else {
+      } else if (!isProduction) {
         callback(null, true);
+      } else {
+        callback(new Error(`Origen ${origin} no autorizado por CORS`), false);
       }
     },
     credentials: true,

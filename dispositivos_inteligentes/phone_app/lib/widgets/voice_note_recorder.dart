@@ -54,7 +54,7 @@ class _VoiceNoteRecorderState extends State<VoiceNoteRecorder>
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
-    )..repeat(reverse: true);
+    );
 
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.25).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),

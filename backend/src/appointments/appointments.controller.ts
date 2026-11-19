@@ -12,6 +12,7 @@ import {
   Query,
   UseGuards,
   Req,
+  Headers,
 } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
@@ -24,12 +25,59 @@ import { UserRole } from '../users/entities/user.entity';
 
 @Controller('appointments')
 export class AppointmentsController {
+  private readonly idempotencyCache = new Map<
+    string,
+    { value: unknown; expiresAt: number }
+  >();
+  private readonly inFlightCreates = new Map<string, Promise<unknown>>();
+
   constructor(private readonly appointmentsService: AppointmentsService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createAppointmentDto: CreateAppointmentDto) {
-    return this.appointmentsService.create(createAppointmentDto);
+  async create(
+    @Body() createAppointmentDto: CreateAppointmentDto,
+    @Headers('idempotency-key') idempotencyKey?: string,
+  ) {
+    const key = idempotencyKey?.trim();
+    if (key) {
+      const now = Date.now();
+      const cached = this.idempotencyCache.get(key);
+      if (cached && cached.expiresAt > now) {
+        return cached.value;
+      }
+      const pending = this.inFlightCreates.get(key);
+      if (pending) {
+        return pending;
+      }
+
+      const work = (async () => {
+        const created =
+          await this.appointmentsService.create(createAppointmentDto);
+        this.appointmentsService.invalidateDateCache(
+          createAppointmentDto.fechaCita,
+        );
+        if (this.idempotencyCache.size > 500) {
+          this.idempotencyCache.clear();
+        }
+        this.idempotencyCache.set(key, {
+          value: created,
+          expiresAt: Date.now() + 5 * 60 * 1000,
+        });
+        return created;
+      })();
+
+      this.inFlightCreates.set(key, work);
+      try {
+        return await work;
+      } finally {
+        this.inFlightCreates.delete(key);
+      }
+    }
+
+    const created = await this.appointmentsService.create(createAppointmentDto);
+    this.appointmentsService.invalidateDateCache(createAppointmentDto.fechaCita);
+    return created;
   }
 
   @Post('audio-presigned-url')

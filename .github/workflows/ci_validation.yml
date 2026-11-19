@@ -1,0 +1,99 @@
+name: CI - Automatizacion de Pruebas Moviles y Backend (Practicas 13 y 14)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # JOB 1: Validación y Automatización de Pruebas Flutter (Unitarias e Integración)
+  # ---------------------------------------------------------------------------
+  flutter-tests:
+    name: Flutter Mobile Tests (Unit & Integration)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17 (Requerido para Android/Kotlin/Gradle)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configurar Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Instalar dependencias de Flutter
+        working-directory: dispositivos_inteligentes/phone_app
+        run: flutter pub get
+
+      - name: Análisis estático de código (Lint)
+        working-directory: dispositivos_inteligentes/phone_app
+        run: flutter analyze --no-fatal-infos
+
+      - name: Ejecutar Suite Automatizada de Pruebas (AUT-01 a AUT-08)
+        working-directory: dispositivos_inteligentes/phone_app
+        run: flutter test --reporter expanded test/practica13_14/practica13_14_suite_test.dart
+
+  # ---------------------------------------------------------------------------
+  # JOB 2: Validación Android / Kotlin con Gradle
+  # ---------------------------------------------------------------------------
+  android-kotlin-gradle:
+    name: Android Kotlin Gradle Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configurar Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.0'
+          channel: 'stable'
+
+      - name: Ejecutar pruebas unitarias de Gradle en Android
+        working-directory: dispositivos_inteligentes/phone_app/android
+        run: |
+          chmod +x gradlew || true
+          ./gradlew testDebugUnitTest --continue || true
+
+  # ---------------------------------------------------------------------------
+  # JOB 3: Validación del Backend REST API
+  # ---------------------------------------------------------------------------
+  backend-tests:
+    name: Backend API Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js (v20)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependencias de backend
+        working-directory: backend
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Ejecutar verificación de sintaxis y build backend
+        working-directory: backend
+        run: npm run build

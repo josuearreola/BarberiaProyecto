@@ -33,12 +33,12 @@ export class SessionAuthGuard implements CanActivate {
     }
 
     if (!userId) {
-      return false;
+      throw new UnauthorizedException('Autenticación requerida');
     }
 
     const loginAt = request.session?.loginAt as number | undefined;
     if (this.securitySessionsService.isSessionRevoked(userId, loginAt)) {
-      return false;
+      throw new UnauthorizedException('Sesión revocada o expirada');
     }
 
     try {

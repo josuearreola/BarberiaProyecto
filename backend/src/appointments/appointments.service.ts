@@ -69,7 +69,16 @@ export class AppointmentsService {
 
     const appointment =
       this.appointmentsRepository.create(createAppointmentDto);
-    const saved = await this.appointmentsRepository.save(appointment);
+    let saved: Appointment;
+    try {
+      saved = await this.appointmentsRepository.save(appointment);
+    } catch (error: any) {
+      // Protege contra condiciones de carrera si el índice único parcial rechaza un duplicado
+      if (error?.code === '23505') {
+        throw new ConflictException('La hora seleccionada ya esta ocupada');
+      }
+      throw error;
+    }
 
     // Emitimos el broadcast para que la TV (PWA) lo reciba en tiempo real
     if (this.barberGateway && this.barberGateway.server) {
@@ -127,6 +136,7 @@ export class AppointmentsService {
     
     appointment.estado = AppointmentStatus.Cancelada;
     const saved = await this.appointmentsRepository.save(appointment);
+    this.invalidateDateCache(saved.fechaCita);
 
     if (this.barberGateway && this.barberGateway.server) {
       this.barberGateway.server.emit('cancel_appointment_broadcast', {
@@ -173,7 +183,21 @@ export class AppointmentsService {
     const sortDir: 'ASC' | 'DESC' =
       (options.sortDir ?? 'DESC').toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
-    const query = this.appointmentsRepository.createQueryBuilder('appointment');
+    const trimmedSearch = options.search?.trim().toLowerCase();
+    const query = this.appointmentsRepository
+      .createQueryBuilder('appointment')
+      .select([
+        'appointment.id',
+        'appointment.nombreCompleto',
+        'appointment.telefono',
+        'appointment.correo',
+        'appointment.servicio',
+        'appointment.fechaCita',
+        'appointment.horaCita',
+        'appointment.estado',
+        'appointment.nombreBarbero',
+        'appointment.creadoEn',
+      ]);
 
     if (options.fecha) {
       query.andWhere('appointment.fechaCita = :fecha', {
@@ -187,8 +211,8 @@ export class AppointmentsService {
       });
     }
 
-    if (options.search) {
-      const search = `%${options.search.trim().toLowerCase()}%`;
+    if (trimmedSearch) {
+      const search = `%${trimmedSearch}%`;
       query.andWhere(
         `(LOWER(appointment.nombreCompleto) LIKE :search
           OR LOWER(appointment.telefono) LIKE :search
@@ -224,11 +248,45 @@ export class AppointmentsService {
     return appointment;
   }
 
+  private readonly dateCache = new Map<
+    string,
+    { data: Appointment[]; expiresAt: number }
+  >();
+
+  invalidateDateCache(fecha?: string): void {
+    if (fecha) {
+      this.dateCache.delete(fecha);
+    } else {
+      this.dateCache.clear();
+    }
+  }
+
   async findByDate(fecha: string): Promise<Appointment[]> {
-    return await this.appointmentsRepository.find({
+    const now = Date.now();
+    const cached = this.dateCache.get(fecha);
+    if (cached && cached.expiresAt > now) {
+      return cached.data;
+    }
+
+    const result = await this.appointmentsRepository.find({
+      select: [
+        'id',
+        'nombreCompleto',
+        'servicio',
+        'fechaCita',
+        'horaCita',
+        'estado',
+        'nombreBarbero',
+      ],
       where: { fechaCita: fecha },
       order: { horaCita: 'ASC' },
     });
+
+    if (this.dateCache.size > 100) {
+      this.dateCache.clear();
+    }
+    this.dateCache.set(fecha, { data: result, expiresAt: now + 5000 });
+    return result;
   }
 
   async updateStatus(id: number, estado: string, nombreBarbero?: string): Promise<Appointment> {
@@ -239,6 +297,7 @@ export class AppointmentsService {
       appointment.nombreBarbero = nombreBarbero;
     }
     const saved = await this.appointmentsRepository.save(appointment);
+    this.invalidateDateCache(saved.fechaCita);
 
     if (this.barberGateway && this.barberGateway.server) {
       this.barberGateway.server.emit('appointment_status_changed', {
@@ -291,6 +350,7 @@ export class AppointmentsService {
     const anteriorEstado = appointment.estado;
     Object.assign(appointment, updateAppointmentDto);
     const saved = await this.appointmentsRepository.save(appointment);
+    this.invalidateDateCache(saved.fechaCita);
 
     if (this.barberGateway && this.barberGateway.server && anteriorEstado !== saved.estado) {
       this.barberGateway.server.emit('appointment_status_changed', {
@@ -313,6 +373,7 @@ export class AppointmentsService {
   async remove(id: number): Promise<void> {
     const appointment = await this.findOne(id);
     await this.appointmentsRepository.remove(appointment);
+    this.invalidateDateCache(appointment.fechaCita);
   }
 
   generateAudioPresignedUrl(fileName?: string, baseUrl?: string) {

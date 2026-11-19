@@ -1,0 +1,220 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- PAQUETES BÁSICOS Y CONFIGURACIÓN ---
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{float}
+
+% --- CONFIGURACIÓN DE ENLACES Y CÓDIGO ---
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue,
+    citecolor=black
+}
+
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    frame=single,
+    showstringspaces=false
+}
+
+\setlength{\parskip}{0.6em}
+\setlength{\parindent}{0pt}
+
+% =========================================================================
+\begin{document}
+% =========================================================================
+
+% --- PORTADA ACOMODADA Y DISTRIBUIDA ---
+\begin{titlepage}
+    \centering
+    \vspace*{1.5cm}
+    
+    {\Large \textbf{SISTEMA DE GESTIÓN DE BARBERÍA}}\\[0.3cm]
+    {\large Asignatura: Calidad y Pruebas de Software}\\[1.5cm]
+    
+    \rule{\linewidth}{1.2pt}\\[0.5cm]
+    {\LARGE \bfseries Reporte de Pruebas de Persistencia, Integridad\\ y Manejo de Errores en Base de Datos}\\[0.4cm]
+    {\large Verificación CRUD, Validación de Datos, Resiliencia Offline\\ y Control de Errores en Colección de Reportes Móviles}\\[0.5cm]
+    \rule{\linewidth}{1.2pt}\\[2.0cm]
+    
+    \begin{minipage}{0.48\textwidth}
+        \textbf{Proyecto:} Aplicación Móvil (\texttt{phone\_app})\\
+        \textbf{Entorno:} Flutter SDK / Dart\\
+        \textbf{Base de Datos:} Neon Cloud (PostgreSQL Serverless)\\
+        \textbf{Colección / Tabla:} \texttt{reportes}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \flushright
+        \textbf{Módulo:} Mantenimiento y Reportes\\
+        \textbf{Casos Evaluados:} 8 Casos (TC01 -- TC08)\\
+        \textbf{Resultado Global:} 100\% Aprobado\\
+        \textbf{Fecha:} \today
+    \end{minipage}
+    
+    \vfill
+    
+    \rule{0.6\linewidth}{0.6pt}\\[0.3cm]
+    {\small Evaluación Técnica de Calidad y Resiliencia de Datos en Dispositivos Inteligentes}
+    \vspace*{1.0cm}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+% =========================================================================
+\section{Introducción y Objetivos de la Práctica}
+% =========================================================================
+
+El objetivo de esta práctica es diseñar y ejecutar una batería rigurosa de pruebas automatizadas sobre una aplicación móvil para comprobar la integridad, persistencia, actualización, eliminación y manejo controlado de errores de los datos almacenados en una base de datos en la nube y su correspondiente almacenamiento local.
+
+En concordancia con los lineamientos de la práctica (que permite utilizar herramientas similares a Firebase Cloud Firestore), el proyecto integra la base de datos en la nube \textbf{Neon Cloud Database} (PostgreSQL Serverless con soporte de documentos JSONB y persistencia relacional estricta), comunicada con la aplicación móvil Flutter (\texttt{phone\_app}) mediante una arquitectura desacoplada y con soporte de persistencia y contingencia offline.
+
+% =========================================================================
+\section{Actividad 1. Configuración del Entorno y Modelo de Datos}
+% =========================================================================
+
+\subsection{Arquitectura del Entorno de Pruebas}
+\begin{enumerate}
+    \item \textbf{Aplicación Móvil:} Proyecto desarrollado en Flutter SDK (Dart) compilable a Android nativo, ubicado en \texttt{dispositivos\_inteligentes/phone\_app}.
+    \item \textbf{Base de Datos en la Nube:} Instancia administrada en \textbf{Neon Cloud} conectada vía SSL obligatorio (\texttt{sslmode=require}) con autenticación por credenciales seguras y aislamiento de esquemas.
+    \item \textbf{Colección / Tabla Seleccionada:} Colección \texttt{reportes}, diseñada para el seguimiento de incidentes, averías y mantenimiento de equipos de la barbería (sillones hidráulicos, máquinas de corte, secadoras, esterilizadores, etc.).
+    \item \textbf{Reglas de Seguridad y Acceso:} Se implementaron restricciones a nivel de capa de servicio:
+    \begin{itemize}
+        \item Cifrado de transporte en tránsito mediante TLS 1.3 / SSL.
+        \item Validación de campos obligatorios en el cliente antes de la transmisión.
+        \item Prevención de accesos anónimos abiertos mediante tokens JWT y cabecera de firma de cliente móvil (\texttt{x-app-client: barberia-smart-device}).
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Estructura del Documento de Reporte}
+Cada documento de la colección \texttt{reportes} cuenta con el siguiente esquema de atributos:
+\begin{itemize}
+    \item \texttt{id} (String): Identificador alfanumérico único del reporte (ej. \texttt{REP001}).
+    \item \texttt{equipo} (String): Nombre o identificador del equipo o mobiliario reportado.
+    \item \texttt{descripcion} (String): Detalle técnico del fallo o solicitud de mantenimiento.
+    \item \texttt{prioridad} (String): Nivel de urgencia (\texttt{Baja}, \texttt{Media}, \texttt{Alta}).
+    \item \texttt{fecha} (String / ISO 8601): Marca de tiempo del registro o última modificación.
+    \item \texttt{estado} (String): Estado de ciclo de vida (\texttt{activo}, \texttt{eliminado}, \texttt{resuelto}).
+    \item \texttt{sincronizado} (Boolean): Bandera de confirmación de persistencia remota en la nube.
+\end{itemize}
+
+\subsection{Documento Inicial de Prueba en la Colección}
+Se agregó el registro inicial representativo para validar la configuración:
+\begin{lstlisting}[language=json]
+{
+  "id": "REP001",
+  "equipo": "Silla Barberia Hidraulica #2",
+  "descripcion": "Falla en el piston de elevacion y fuga de liquido hidraulico",
+  "prioridad": "Media",
+  "fecha": "2026-10-29T10:30:00Z",
+  "estado": "activo",
+  "sincronizado": true
+}
+\end{lstlisting}
+
+% =========================================================================
+\section{Actividades 2 y 3. Pruebas Funcionales y de Errores}
+% =========================================================================
+
+Se implementó el repositorio de datos \texttt{ReportsRepository} en \texttt{phone\_app/lib/services/reports\_repository.dart} y la suite automatizada en \texttt{phone\_app/test/unit/reports\_repository\_test.dart}. La batería abarca 8 casos de prueba exhaustivos agrupados en dos dimensiones:
+
+\subsection{Pruebas Funcionales (CRUD e Integridad)}
+\begin{itemize}
+    \item \textbf{TC01 - Alta válida:} Se registra un reporte con todos sus atributos completos y válidos. La prueba verifica que el objeto sea almacenado en el repositorio y que una consulta posterior devuelva exactamente la misma información.
+    \item \textbf{TC04 - Actualización:} Se toma un reporte existente con prioridad \texttt{Media} y se ejecuta la operación de actualización a \texttt{Alta}. Se vuelve a consultar el documento y se verifica que el nuevo valor persista de manera íntegra.
+    \item \textbf{TC05 - Eliminación:} Se ejecuta la operación de borrado sobre un reporte activo. La prueba verifica que una consulta posterior retorne \texttt{null} (o registro no encontrado) y que el elemento ya no aparezca en la lista de reportes activos.
+    \item \textbf{TC08 - Persistencia tras Reinicio:} Se simula el ciclo de vida de la aplicación cerrando el proceso (limpieza de memoria volátil) y reiniciándolo desde el almacenamiento físico persistente; se comprueba que los datos guardados continúan disponibles.
+\end{itemize}
+
+\subsection{Pruebas de Errores y Robustez}
+\begin{itemize}
+    \item \textbf{TC02 - Campos vacíos:} Se intenta registrar un reporte omitiendo los campos requeridos (\texttt{equipo} con solo espacios y \texttt{descripcion} vacía). La aplicación debe interceptar los datos, lanzar una excepción controlada de validación (\texttt{ReportValidationException}) e impedir la inserción.
+    \item \textbf{TC03 - Identificador repetido:} Se intenta guardar un reporte con el identificador \texttt{REP001} cuando ya existe uno activo con ese mismo ID. La aplicación rechaza la operación mediante \texttt{DuplicateReportException}, evitando la sobrescritura destructiva de información.
+    \item \textbf{TC06 - Documento inexistente:} Se realiza la consulta del ID \texttt{REP999}. La aplicación procesa el resultado vacío sin provocar bloqueos, excepciones no controladas ni caídas del sistema (\textit{crashes}), devolviendo \texttt{null} de forma segura.
+    \item \textbf{TC07 - Pérdida de conexión (Modo Offline):} Se simula un corte en la conexión a internet (\texttt{isOnline: false}) durante el guardado. La aplicación almacena el reporte en la caché local persistente, marca la bandera \texttt{sincronizado = false} e informa el estado al usuario sin abortar la operación.
+\end{itemize}
+
+% =========================================================================
+\clearpage
+\section{Actividad 4. Matriz de Resultados y Evidencias}
+% =========================================================================
+
+\subsection{Matriz de Pruebas de Base de Datos y Persistencia (Neon / Firestore)}
+
+A continuación se detalla la matriz de casos de prueba con delimitación clara y margen interno de celdas:
+
+\begin{table}[H]
+\centering
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\linewidth}{|>{\centering\arraybackslash}p{1.0cm}|>{\raggedright\arraybackslash}p{1.8cm}|>{\raggedright\arraybackslash}p{2.6cm}|>{\raggedright\arraybackslash}p{2.6cm}|>{\centering\arraybackslash}p{1.0cm}|X|}
+\hline
+\textbf{Caso} & \textbf{Nombre} & \textbf{Acción Ejecutada} & \textbf{Resultado Esperado} & \textbf{Estado} & \textbf{Observaciones Técnicas} \\
+\hline
+\textbf{TC01} & Alta válida & Registrar reporte con campos correctos. & El documento se almacena y puede consultarse. & \textbf{Pasó} & Almacenado con éxito en memoria y disco; sincronizado en Neon. \\
+\hline
+\textbf{TC02} & Campos vacíos & Guardar reporte sin equipo ni descripción. & La app rechaza los datos y muestra validación. & \textbf{Pasó} & Arroja \texttt{ReportValidationException}; no inserta registros corruptos. \\
+\hline
+\textbf{TC03} & ID repetido & Guardar dos veces con ID \texttt{REP001}. & Evita sobrescribir accidentalmente. & \textbf{Pasó} & Detecta conflicto de clave y lanza \texttt{DuplicateReportException}. \\
+\hline
+\textbf{TC04} & Actualización & Cambiar prioridad de Media a Alta. & El cambio se conserva al reconsultar. & \textbf{Pasó} & La propiedad se actualiza y la fecha de modificación se renueva. \\
+\hline
+\textbf{TC05} & Eliminación & Eliminar reporte existente y consultar. & El documento ya no aparece como activo. & \textbf{Pasó} & Retorna \texttt{null} en consulta y se excluye de la lista activa. \\
+\hline
+\textbf{TC06} & Inexistente & Consultar ID \texttt{REP999}. & Maneja resultado vacío sin bloquearse. & \textbf{Pasó} & Retorna \texttt{null} de forma limpia sin generar excepciones fatales. \\
+\hline
+\textbf{TC07} & Pérdida de red & Desactivar red durante escritura. & Guarda en local, informa y gestiona sync. & \textbf{Pasó} & Persistido localmente con \texttt{sincronizado = false} y log explícito. \\
+\hline
+\textbf{TC08} & Persistencia & Reiniciar app y consultar reporte. & El dato persiste y vuelve a mostrarse. & \textbf{Pasó} & Restaurado íntegramente desde almacenamiento persistente tras reinicio. \\
+\hline
+\end{tabularx}
+\caption{Matriz consolidada de pruebas de persistencia y manejo de errores (8/8 Aprobadas).}
+\label{tab:matriz_pruebas_db}
+\end{table}
+
+\clearpage
+\subsection{Evidencias de Ejecución en Consola}
+
+A continuación se presenta la evidencia gráfica de la ejecución de la suite de pruebas automatizadas en la terminal PowerShell (\texttt{flutter test -{}-reporter expanded test/unit/reports\_repository\_test.dart}), certificando la aprobación del 100\% de los casos de prueba diseñados con su desglose línea por línea:
+
+\vspace{0.4cm}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{evidencia_reportes_neon.png}
+\caption{Evidencia gráfica de ejecución en consola PowerShell: Desglose completo de los 8 casos de prueba aprobados (8/8).}
+\label{fig:evidencia_reportes}
+\end{figure}
+\vspace{0.4cm}
+
+% =========================================================================
+\clearpage
+\section{Conclusiones y Análisis de Defectos Encontrados}
+% =========================================================================
+
+\subsection{Defectos Detectados y Mitigados}
+Durante el diseño y ejecución de las pruebas se identificaron dos riesgos técnicos significativos:
+\begin{enumerate}
+    \item \textbf{Sobrescritura Accidental por Identificadores Duplicados (Mitigado en TC03):}
+    En arquitecturas NoSQL o de documentos en la nube (como Cloud Firestore o colecciones basadas en documentos), una operación de escritura directa con un ID existente suele realizar un \textit{upsert} que reemplaza el documento sin advertencia. Se comprobó la necesidad imperativa de contar con una verificación previa de existencia o una política explícita de conflicto a nivel repositorio, protegiendo la integridad de los datos.
+    
+    \item \textbf{Falsos Positivos en la Validación de Cadenas en Blanco (Mitigado en TC02):}
+    Validar únicamente con \texttt{isEmpty} permite que cadenas formadas solo por espacios en blanco (\texttt{"   "}) sean procesadas como válidas. Se reforzó el esquema aplicando \texttt{trim().isEmpty}, garantizando que ningún registro sin contenido representativo sea transmitido a Neon Cloud.
+\end{enumerate}
+
+\subsection{Conclusión de Integridad y Persistencia}
+Las 8 pruebas ejecutadas demuestran que la capa de datos de la aplicación móvil garantiza la consistencia del modelo documental tanto en condiciones óptimas (alta, consulta, actualización) como en condiciones adversas (documentos inexistentes, colisión de identificadores y corte de red). La combinación de persistencia local resiliente con sincronización remota hacia Neon Cloud cumple plenamente con los estándares de disponibilidad, integridad referencial y seguridad exigidos en aplicaciones móviles profesionales.
+
+\end{document}
