@@ -27,7 +27,7 @@ class LocalLoopbackApiService extends ApiService {
   LocalLoopbackApiService(this.port);
 
   @override
-  Future<http.Response> post(String endpoint, Map<String, dynamic> body) async {
+  Future<http.Response> post(String endpoint, Map<String, dynamic> body, {String? idempotencyKey}) async {
     final url = Uri.parse('http://127.0.0.1:$port$endpoint');
     return await http.post(
       url,
@@ -59,7 +59,7 @@ class MockApiServiceForUI extends ApiService {
   http.Response Function(String endpoint)? getHandler;
 
   @override
-  Future<http.Response> post(String endpoint, Map<String, dynamic> body) async {
+  Future<http.Response> post(String endpoint, Map<String, dynamic> body, {String? idempotencyKey}) async {
     postCallCount++;
     if (postHandler != null) return postHandler!(endpoint, body);
     return http.Response(jsonEncode({'id': 1}), 201);

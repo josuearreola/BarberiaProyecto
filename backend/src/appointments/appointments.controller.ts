@@ -76,7 +76,9 @@ export class AppointmentsController {
     }
 
     const created = await this.appointmentsService.create(createAppointmentDto);
-    this.appointmentsService.invalidateDateCache(createAppointmentDto.fechaCita);
+    this.appointmentsService.invalidateDateCache(
+      createAppointmentDto.fechaCita,
+    );
     return created;
   }
 
@@ -169,7 +171,11 @@ export class AppointmentsController {
   @UseGuards(SessionAuthGuard, RolesGuard)
   @Roles(UserRole.Admin)
   updateStatus(@Param('id') id: string, @Body() body: UpdateStatusDto) {
-    return this.appointmentsService.updateStatus(+id, body.estado, body.nombreBarbero);
+    return this.appointmentsService.updateStatus(
+      +id,
+      body.estado,
+      body.nombreBarbero,
+    );
   }
 
   @Patch(':id')

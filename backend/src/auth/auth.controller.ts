@@ -32,7 +32,11 @@ export class AuthController {
   @Post('register')
   async requestRegister(@Body() dto: RegisterDto, @Req() req: Request) {
     const result = await this.authService.requestRegistration(dto);
-    await this.auditLogService.log(dto.usuario, 'Alta de usuario (auto-registro)', this.getIp(req));
+    await this.auditLogService.log(
+      dto.usuario,
+      'Alta de usuario (auto-registro)',
+      this.getIp(req),
+    );
     return result;
   }
 
@@ -54,7 +58,11 @@ export class AuthController {
       req.session.userId = user.id;
       req.session.role = user.role;
       req.session.loginAt = Date.now();
-      await this.auditLogService.log(user.usuario, 'Confirmación de registro', this.getIp(req));
+      await this.auditLogService.log(
+        user.usuario,
+        'Confirmación de registro',
+        this.getIp(req),
+      );
       res.redirect(`${frontendBase}/login?verified=1`);
     } catch {
       res.redirect(`${frontendBase}/registro?verified=0`);
@@ -63,14 +71,17 @@ export class AuthController {
 
   @Post('register/confirm')
   async confirmRegisterByBody(@Body() dto: TokenDto, @Req() req: Request) {
-    const { user, accessToken } = await this.authService.confirmRegistrationToken(
-      dto.token,
-    );
+    const { user, accessToken } =
+      await this.authService.confirmRegistrationToken(dto.token);
 
     req.session.userId = user.id;
     req.session.role = user.role;
     req.session.loginAt = Date.now();
-    await this.auditLogService.log(user.usuario, 'Confirmación de registro', this.getIp(req));
+    await this.auditLogService.log(
+      user.usuario,
+      'Confirmación de registro',
+      this.getIp(req),
+    );
 
     return {
       ...user,
@@ -87,7 +98,11 @@ export class AuthController {
     req.session.loginAt = Date.now();
 
     await this.authService.notifyLogin(user, req);
-    await this.auditLogService.log(user.usuario, 'Inicio de sesión', this.getIp(req));
+    await this.auditLogService.log(
+      user.usuario,
+      'Inicio de sesión',
+      this.getIp(req),
+    );
 
     return {
       ...user,
@@ -126,7 +141,11 @@ export class AuthController {
   async updateProfile(@Req() req: Request, @Body() body: any) {
     const userId = req.session.userId!;
     const user = await this.usersService.update(userId, body);
-    await this.auditLogService.log(user.usuario, 'Cambio de perfil (propio)', this.getIp(req));
+    await this.auditLogService.log(
+      user.usuario,
+      'Cambio de perfil (propio)',
+      this.getIp(req),
+    );
     return user;
   }
 
@@ -140,13 +159,17 @@ export class AuthController {
     const user = await this.usersService.findById(userId);
 
     // Validar contraseña actual
-    const valid = await this.usersService.validatePassword(user.email, body.contrasenaActual);
+    const valid = await this.usersService.validatePassword(
+      user.email,
+      body.contrasenaActual,
+    );
     if (!valid) {
       throw new UnauthorizedException('La contraseña actual es incorrecta');
     }
 
     // Validar políticas de contraseña segura
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const regex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!regex.test(body.contrasenaNueva)) {
       throw new UnauthorizedException(
         'La nueva contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.',
@@ -154,7 +177,11 @@ export class AuthController {
     }
 
     await this.usersService.updatePassword(userId, body.contrasenaNueva);
-    await this.auditLogService.log(user.usuario, 'Cambio de contraseña (propio)', this.getIp(req));
+    await this.auditLogService.log(
+      user.usuario,
+      'Cambio de contraseña (propio)',
+      this.getIp(req),
+    );
     return { ok: true };
   }
 

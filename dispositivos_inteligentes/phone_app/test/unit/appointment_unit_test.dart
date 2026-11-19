@@ -27,7 +27,7 @@ class FakeApiService extends ApiService {
   }
 
   @override
-  Future<http.Response> post(String endpoint, Map<String, dynamic> body) async {
+  Future<http.Response> post(String endpoint, Map<String, dynamic> body, {String? idempotencyKey}) async {
     postCallCount++;
     lastEndpoint = endpoint;
     lastPostBody = body;

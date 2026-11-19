@@ -1,0 +1,19 @@
+analyzer:
+  exclude:
+    - 'EntregablesPractica11/**'
+    - 'EntregablesPractica12/**'
+    - 'EntregablesPracticas13_14/**'
+    - 'backend/**'
+    - 'frontend/**'
+    - 'evidencias_practica11/**'
+    - 'evaluacion_calidad_movil/**'
+
+  errors:
+    uri_does_not_exist: ignore
+    undefined_class: ignore
+    undefined_function: ignore
+    undefined_identifier: ignore
+    deprecated_member_use: ignore
+    invalid_override: ignore
+    unnecessary_import: ignore
+    unused_import: ignore

@@ -30,11 +30,15 @@ export class MailService {
 
     this.resend = new Resend(apiKey);
     this.fromAddress = process.env.RESEND_FROM ?? 'onboarding@resend.dev';
-    this.logger.log(`MailService inicializado con dominio: ${this.fromAddress}`);
+    this.logger.log(
+      `MailService inicializado con dominio: ${this.fromAddress}`,
+    );
   }
 
-
-  async sendRegistrationVerification(email: string, verifyUrl: string): Promise<void> {
+  async sendRegistrationVerification(
+    email: string,
+    verifyUrl: string,
+  ): Promise<void> {
     if (!this.resend) return;
 
     const subject = 'Confirma tu cuenta en Barberia';
@@ -109,9 +113,12 @@ export class MailService {
         );
       }
 
-      this.logger.log(`Correo enviado exitosamente a ${to} (ID: ${result.data?.id})`);
+      this.logger.log(
+        `Correo enviado exitosamente a ${to} (ID: ${result.data?.id})`,
+      );
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error desconocido';
+      const message =
+        error instanceof Error ? error.message : 'Error desconocido';
       this.logger.error(`No se pudo enviar correo a ${to}: ${message}`);
 
       if (error instanceof InternalServerErrorException) {

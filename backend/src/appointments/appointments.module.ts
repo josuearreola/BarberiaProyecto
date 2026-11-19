@@ -8,7 +8,12 @@ import { UsersModule } from '../users/users.module';
 import { GatewayModule } from '../gateway.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Appointment]), AuthModule, UsersModule, GatewayModule],
+  imports: [
+    TypeOrmModule.forFeature([Appointment]),
+    AuthModule,
+    UsersModule,
+    GatewayModule,
+  ],
   controllers: [AppointmentsController],
   providers: [AppointmentsService],
   exports: [AppointmentsService],

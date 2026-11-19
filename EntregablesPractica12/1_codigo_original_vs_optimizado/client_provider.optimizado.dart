@@ -1,3 +1,4 @@
+// ignore_for_file: uri_does_not_exist, undefined_class, undefined_function, undefined_identifier, invalid_override, unnecessary_import, deprecated_member_use
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';

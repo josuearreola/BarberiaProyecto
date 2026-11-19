@@ -76,7 +76,10 @@ export class UsersController {
 
   @Post(':id/change-password')
   @HttpCode(HttpStatus.OK)
-  async changePassword(@Param('id') id: string, @Body() body: { contrasena: string }) {
+  async changePassword(
+    @Param('id') id: string,
+    @Body() body: { contrasena: string },
+  ) {
     await this.usersService.updatePassword(+id, body.contrasena);
     return { ok: true };
   }
@@ -92,7 +95,10 @@ export class UsersController {
   }
 
   @Delete('roles/permissions')
-  async removePermission(@Query('role') role: string, @Query('permission') permission: string) {
+  async removePermission(
+    @Query('role') role: string,
+    @Query('permission') permission: string,
+  ) {
     await this.usersService.removeRolePermission(role, permission);
     return { ok: true };
   }
@@ -103,6 +109,10 @@ export class UsersController {
     @Query('limit') limit?: string,
     @Query('search') search?: string,
   ) {
-    return this.auditLogService.findAll(Number(page || 1), Number(limit || 50), search);
+    return this.auditLogService.findAll(
+      Number(page || 1),
+      Number(limit || 50),
+      search,
+    );
   }
 }

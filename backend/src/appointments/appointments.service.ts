@@ -61,7 +61,9 @@ export class AppointmentsService {
 
     // Normalizar 'notas': Guardar siempre la ruta relativa (ej: uploads/audio/audio_123.m4a)
     if (createAppointmentDto.notas) {
-      const match = createAppointmentDto.notas.match(/uploads\/audio\/[^?#\s]+/);
+      const match = createAppointmentDto.notas.match(
+        /uploads\/audio\/[^?#\s]+/,
+      );
       if (match) {
         createAppointmentDto.notas = match[0];
       }
@@ -88,7 +90,7 @@ export class AppointmentsService {
         time: saved.horaCita,
         barber: saved.nombreBarbero || 'Sin asignar',
         client: saved.nombreCompleto,
-        status: saved.estado
+        status: saved.estado,
       });
     }
 
@@ -101,7 +103,7 @@ export class AppointmentsService {
     }
     try {
       const user = await this.usersService.findById(userId);
-      
+
       if (!user.email) {
         return [];
       }
@@ -111,8 +113,8 @@ export class AppointmentsService {
         where: { correo: user.email },
         order: {
           fechaCita: 'DESC',
-          horaCita: 'DESC'
-        }
+          horaCita: 'DESC',
+        },
       });
     } catch (e) {
       console.error('Error finding client appointments:', e);
@@ -120,27 +122,35 @@ export class AppointmentsService {
     }
   }
 
-  async cancelClientAppointment(appointmentId: number, userId: number): Promise<Appointment> {
+  async cancelClientAppointment(
+    appointmentId: number,
+    userId: number,
+  ): Promise<Appointment> {
     const user = await this.usersService.findById(userId);
     const appointment = await this.findOne(appointmentId);
-    
+
     // Verificar que la cita pertenezca al usuario (por correo o teléfono)
-    if (appointment.correo !== user.email && appointment.telefono !== user.telefono) {
+    if (
+      appointment.correo !== user.email &&
+      appointment.telefono !== user.telefono
+    ) {
       throw new ConflictException('No tienes permiso para cancelar esta cita.');
     }
-    
+
     // Verificar que la cita esté en estado pendiente
     if (appointment.estado !== AppointmentStatus.Pendiente) {
-      throw new ConflictException('Solo se pueden cancelar citas en estado pendiente.');
+      throw new ConflictException(
+        'Solo se pueden cancelar citas en estado pendiente.',
+      );
     }
-    
+
     appointment.estado = AppointmentStatus.Cancelada;
     const saved = await this.appointmentsRepository.save(appointment);
     this.invalidateDateCache(saved.fechaCita);
 
     if (this.barberGateway && this.barberGateway.server) {
       this.barberGateway.server.emit('cancel_appointment_broadcast', {
-        id: saved.id
+        id: saved.id,
       });
       this.barberGateway.server.emit('appointment_status_changed', {
         id: saved.id,
@@ -155,7 +165,7 @@ export class AppointmentsService {
         nombreBarbero: saved.nombreBarbero || 'Sin asignar',
       });
     }
-    
+
     return saved;
   }
 
@@ -289,7 +299,11 @@ export class AppointmentsService {
     return result;
   }
 
-  async updateStatus(id: number, estado: string, nombreBarbero?: string): Promise<Appointment> {
+  async updateStatus(
+    id: number,
+    estado: string,
+    nombreBarbero?: string,
+  ): Promise<Appointment> {
     const appointment = await this.findOne(id);
     const anteriorEstado = appointment.estado;
     appointment.estado = estado;
@@ -341,7 +355,9 @@ export class AppointmentsService {
     }
 
     if (updateAppointmentDto.notas) {
-      const match = updateAppointmentDto.notas.match(/uploads\/audio\/[^?#\s]+/);
+      const match = updateAppointmentDto.notas.match(
+        /uploads\/audio\/[^?#\s]+/,
+      );
       if (match) {
         updateAppointmentDto.notas = match[0];
       }
@@ -352,7 +368,11 @@ export class AppointmentsService {
     const saved = await this.appointmentsRepository.save(appointment);
     this.invalidateDateCache(saved.fechaCita);
 
-    if (this.barberGateway && this.barberGateway.server && anteriorEstado !== saved.estado) {
+    if (
+      this.barberGateway &&
+      this.barberGateway.server &&
+      anteriorEstado !== saved.estado
+    ) {
       this.barberGateway.server.emit('appointment_status_changed', {
         id: saved.id,
         correo: saved.correo,
@@ -377,7 +397,8 @@ export class AppointmentsService {
   }
 
   generateAudioPresignedUrl(fileName?: string, baseUrl?: string) {
-    const ext = fileName && fileName.includes('.') ? path.extname(fileName) : '.m4a';
+    const ext =
+      fileName && fileName.includes('.') ? path.extname(fileName) : '.m4a';
     const uniqueName = `audio_${Date.now()}_${crypto.randomBytes(4).toString('hex')}${ext}`;
     const expires = Date.now() + 15 * 60 * 1000; // Válida por 15 minutos
 
@@ -387,11 +408,14 @@ export class AppointmentsService {
       .update(`${uniqueName}:${expires}`)
       .digest('hex');
 
-    const cleanBaseUrl = (baseUrl || 'http://localhost:3000').replace(/\/$/, '');
-    
+    const cleanBaseUrl = (baseUrl || 'http://localhost:3000').replace(
+      /\/$/,
+      '',
+    );
+
     // uploadUrl es la URL preasignada a donde la app móvil subirá el audio con PUT
     const uploadUrl = `${cleanBaseUrl}/api/appointments/upload-audio?fileName=${encodeURIComponent(uniqueName)}&expires=${expires}&signature=${signature}`;
-    
+
     // fileUrl es la URL absoluta para reproducción directa
     const fileUrl = `${cleanBaseUrl}/uploads/audio/${uniqueName}`;
     // relativePath es la ruta relativa recomendada para almacenar en la BD

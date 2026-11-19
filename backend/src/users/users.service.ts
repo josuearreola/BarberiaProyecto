@@ -265,7 +265,10 @@ export class UsersService {
     return perms.map((p) => p.permission);
   }
 
-  async addRolePermission(role: string, permission: string): Promise<RolePermission> {
+  async addRolePermission(
+    role: string,
+    permission: string,
+  ): Promise<RolePermission> {
     const existing = await this.rolePermissionRepository.findOne({
       where: { role, permission },
     });

@@ -9,7 +9,10 @@ import { UsersController } from './users.controller';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, AuditLog, RolePermission]), forwardRef(() => AuthModule)],
+  imports: [
+    TypeOrmModule.forFeature([User, AuditLog, RolePermission]),
+    forwardRef(() => AuthModule),
+  ],
   controllers: [UsersController],
   providers: [UsersService, AuditLogService],
   exports: [UsersService, AuditLogService, TypeOrmModule],

@@ -148,7 +148,9 @@ export class AuthService {
     }
 
     if (user.estado !== UserStatus.Activo) {
-      throw new UnauthorizedException('Usuario inactivo. Contacta al administrador.');
+      throw new UnauthorizedException(
+        'Usuario inactivo. Contacta al administrador.',
+      );
     }
 
     const matches = await bcrypt.compare(password, user.passwordHash);
@@ -205,7 +207,8 @@ export class AuthService {
         logoutEverywhereUrl,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error desconocido';
+      const message =
+        error instanceof Error ? error.message : 'Error desconocido';
       this.logger.warn(
         `No se pudo enviar alerta de login a ${user.email}: ${message}`,
       );

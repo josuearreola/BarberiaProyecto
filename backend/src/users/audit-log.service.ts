@@ -12,10 +12,10 @@ export class AuditLogService {
 
   async log(usuario: string, accion: string, ip: string): Promise<AuditLog> {
     const now = new Date();
-    
+
     // Formatear fecha como YYYY-MM-DD
     const fecha = now.toISOString().split('T')[0];
-    
+
     // Formatear hora como HH:MM:SS
     const hora = now.toTimeString().split(' ')[0];
 
@@ -30,20 +30,25 @@ export class AuditLogService {
     return this.auditLogRepository.save(auditLog);
   }
 
-  async findAll(page = 1, limit = 50, search?: string): Promise<{ data: AuditLog[]; total: number }> {
+  async findAll(
+    page = 1,
+    limit = 50,
+    search?: string,
+  ): Promise<{ data: AuditLog[]; total: number }> {
     const query = this.auditLogRepository.createQueryBuilder('log');
 
     if (search) {
       const term = `%${search.trim().toLowerCase()}%`;
       query.where(
         'LOWER(log.usuario) LIKE :term OR LOWER(log.accion) LIKE :term OR LOWER(log.ip) LIKE :term',
-        { term }
+        { term },
       );
     }
 
-    query.orderBy('log.id', 'DESC')
-         .skip((page - 1) * limit)
-         .take(limit);
+    query
+      .orderBy('log.id', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
 
     const [data, total] = await query.getManyAndCount();
     return { data, total };

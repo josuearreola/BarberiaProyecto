@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 import { SecuritySessionsService } from '../security-sessions.service';
 import { UsersService } from '../../users/users.service';
@@ -23,7 +28,7 @@ export class SessionAuthGuard implements CanActivate {
         const secret = process.env.JWT_SECRET || 'dev_jwt_secret';
         const payload = jwt.verify(token, secret) as any;
         userId = payload.sub;
-        
+
         request.session = request.session || {};
         request.session.userId = userId;
         request.session.role = payload.role;

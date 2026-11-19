@@ -1,4 +1,10 @@
-import { IsString, IsOptional, IsEmail, IsDateString, IsIn } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEmail,
+  IsDateString,
+  IsIn,
+} from 'class-validator';
 import { AppointmentStatus } from '../entities/appointment.entity';
 
 export class UpdateAppointmentDto {

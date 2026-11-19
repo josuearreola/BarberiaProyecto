@@ -7,7 +7,10 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { AppointmentsController } from '../../src/appointments/appointments.controller';
 import { AppointmentsService } from '../../src/appointments/appointments.service';
-import { Appointment, AppointmentStatus } from '../../src/appointments/entities/appointment.entity';
+import {
+  Appointment,
+  AppointmentStatus,
+} from '../../src/appointments/entities/appointment.entity';
 import { SessionAuthGuard } from '../../src/auth/guards/session-auth.guard';
 import { RolesGuard } from '../../src/auth/guards/roles.guard';
 import { UsersService } from '../../src/users/users.service';
@@ -18,7 +21,9 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 function percentile(sorted: number[], p: number): number {
   if (!sorted.length) return 0;
   const idx = Math.ceil((p / 100) * sorted.length) - 1;
-  return Number(sorted[Math.max(0, Math.min(idx, sorted.length - 1))].toFixed(2));
+  return Number(
+    sorted[Math.max(0, Math.min(idx, sorted.length - 1))].toFixed(2),
+  );
 }
 
 function buildSeedAppointments(count: number): Appointment[] {
@@ -29,9 +34,13 @@ function buildSeedAppointments(count: number): Appointment[] {
     a.telefono = `449100${String(1000 + i)}`;
     a.correo = `cliente${i}@barberia.com`;
     a.servicio = i % 2 === 0 ? 'Corte Clasico' : 'Barba y Corte';
-    a.fechaCita = i < 40 ? '2026-12-20' : `2026-12-${String((i % 20) + 1).padStart(2, '0')}`;
+    a.fechaCita =
+      i < 40
+        ? '2026-12-20'
+        : `2026-12-${String((i % 20) + 1).padStart(2, '0')}`;
     a.horaCita = `${String(8 + (i % 12)).padStart(2, '0')}:${i % 2 === 0 ? '00' : '30'}`;
-    a.estado = i % 3 === 0 ? AppointmentStatus.Pendiente : AppointmentStatus.Confirmada;
+    a.estado =
+      i % 3 === 0 ? AppointmentStatus.Pendiente : AppointmentStatus.Confirmada;
     a.notas = `Nota detallada de prueba numero ${i} para evaluar transferencia de columnas y serializacion JSON en TypeORM`;
     a.nombreBarbero = 'Carlos Barber';
     a.creadoEn = new Date('2026-11-10T10:00:00.000Z');
@@ -75,7 +84,8 @@ describe('Practica 12 Backend Benchmark (Antes vs Despues)', () => {
       find: async ({ where, select }: any) => {
         dbSelectCalls++;
         // Simula I/O realista de Postgres: 2.8 ms para SELECT *, 1.1 ms para proyeccion selectiva
-        const hasProjection = Array.isArray(select) && select.length > 0 && select.length <= 8;
+        const hasProjection =
+          Array.isArray(select) && select.length > 0 && select.length <= 8;
         await sleep(hasProjection ? 1.1 : 2.8);
         const filtered = rows
           .filter((r) => !where?.fechaCita || r.fechaCita === where.fechaCita)
@@ -86,7 +96,12 @@ describe('Practica 12 Backend Benchmark (Antes vs Despues)', () => {
       save: async (entity: any) => {
         dbInsertCalls++;
         await sleep(2.0);
-        const saved = { ...entity, id: entity.id || nextId++, creadoEn: new Date(), actualizadoEn: new Date() };
+        const saved = {
+          ...entity,
+          id: entity.id || nextId++,
+          creadoEn: new Date(),
+          actualizadoEn: new Date(),
+        };
         rows.push(saved);
         return saved;
       },
@@ -106,7 +121,10 @@ describe('Practica 12 Backend Benchmark (Antes vs Despues)', () => {
           andWhere: (sql: string, params: any) => {
             if (params?.fecha) filterFecha = params.fecha;
             if (params?.estado) filterEstado = params.estado;
-            if (params?.search) filterSearch = String(params.search).replace(/%/g, '').toLowerCase();
+            if (params?.search)
+              filterSearch = String(params.search)
+                .replace(/%/g, '')
+                .toLowerCase();
             return qb;
           },
           orderBy: () => qb,
@@ -120,13 +138,15 @@ describe('Practica 12 Backend Benchmark (Antes vs Despues)', () => {
           },
           getManyAndCount: async () => {
             dbSelectCalls++;
-            const narrow = Array.isArray(selectedCols) && selectedCols.length <= 9;
+            const narrow =
+              Array.isArray(selectedCols) && selectedCols.length <= 9;
             await sleep(narrow ? 1.6 : 4.2);
             const matched = rows.filter((r) => {
               if (filterFecha && r.fechaCita !== filterFecha) return false;
               if (filterEstado && r.estado !== filterEstado) return false;
               if (filterSearch) {
-                const hay = `${r.nombreCompleto} ${r.telefono} ${r.correo || ''} ${r.servicio}`.toLowerCase();
+                const hay =
+                  `${r.nombreCompleto} ${r.telefono} ${r.correo || ''} ${r.servicio}`.toLowerCase();
                 if (!hay.includes(filterSearch)) return false;
               }
               return true;
@@ -163,7 +183,9 @@ describe('Practica 12 Backend Benchmark (Antes vs Despues)', () => {
       .compile();
 
     const app = moduleRef.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ transform: true, whitelist: true }),
+    );
     await app.init();
     await app.listen(0, '127.0.0.1');
     const url = await app.getUrl();
@@ -197,10 +219,14 @@ describe('Practica 12 Backend Benchmark (Antes vs Despues)', () => {
     const cpuMs = (cpuDelta.user + cpuDelta.system) / 1000;
     const cpuPct = Number(((cpuMs / wallMs) * 100).toFixed(2));
     const sorted = [...latencies].sort((a, b) => a - b);
-    const avgMs = Number((latencies.reduce((a, b) => a + b, 0) / latencies.length).toFixed(2));
+    const avgMs = Number(
+      (latencies.reduce((a, b) => a + b, 0) / latencies.length).toFixed(2),
+    );
     const p95Ms = percentile(sorted, 95);
     const rps = Number(((totalReqs / wallMs) * 1000).toFixed(2));
-    const avgBytes = Math.round(bytesList.reduce((a, b) => a + b, 0) / bytesList.length);
+    const avgBytes = Math.round(
+      bytesList.reduce((a, b) => a + b, 0) / bytesList.length,
+    );
     const dbCallsByDate = dbSelectCalls;
 
     // 2. Consulta filtrada paginada (findAll) x 15 corridas
@@ -208,13 +234,19 @@ describe('Practica 12 Backend Benchmark (Antes vs Despues)', () => {
     const qBytes: number[] = [];
     for (let i = 0; i < 15; i++) {
       const t0 = performance.now();
-      const res = await fetch(`${url}/appointments?fecha=2026-12-20&estado=pendiente&search=Cliente&limit=20`);
+      const res = await fetch(
+        `${url}/appointments?fecha=2026-12-20&estado=pendiente&search=Cliente&limit=20`,
+      );
       const txt = await res.text();
       qLat.push(performance.now() - t0);
       qBytes.push(Buffer.byteLength(txt, 'utf8'));
     }
-    const queryAvgMs = Number((qLat.reduce((a, b) => a + b, 0) / qLat.length).toFixed(2));
-    const queryAvgBytes = Math.round(qBytes.reduce((a, b) => a + b, 0) / qBytes.length);
+    const queryAvgMs = Number(
+      (qLat.reduce((a, b) => a + b, 0) / qLat.length).toFixed(2),
+    );
+    const queryAvgBytes = Math.round(
+      qBytes.reduce((a, b) => a + b, 0) / qBytes.length,
+    );
 
     // 3. Reintento de escritura con mismo Idempotency-Key (RES-07 Backend)
     dbInsertCalls = 0;
@@ -228,16 +260,24 @@ describe('Practica 12 Backend Benchmark (Antes vs Despues)', () => {
     };
     const w1 = await fetch(`${url}/appointments`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Idempotency-Key': 'idem-p12-local-001' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Idempotency-Key': 'idem-p12-local-001',
+      },
       body: JSON.stringify(writePayload),
     });
     const w2 = await fetch(`${url}/appointments`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Idempotency-Key': 'idem-p12-local-001' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Idempotency-Key': 'idem-p12-local-001',
+      },
       body: JSON.stringify(writePayload),
     });
 
-    const ramMb = Number((process.memoryUsage().rss / (1024 * 1024)).toFixed(2));
+    const ramMb = Number(
+      (process.memoryUsage().rss / (1024 * 1024)).toFixed(2),
+    );
 
     await app.close();
 
@@ -265,7 +305,8 @@ describe('Practica 12 Backend Benchmark (Antes vs Despues)', () => {
         attempt1Status: w1.status,
         attempt2Status: w2.status,
         dbInsertsExecuted: dbInsertCalls,
-        safeRetrySucceeded: w1.status === 201 && w2.status === 201 && dbInsertCalls === 1,
+        safeRetrySucceeded:
+          w1.status === 201 && w2.status === 201 && dbInsertCalls === 1,
       },
     };
 
@@ -274,4 +315,3 @@ describe('Practica 12 Backend Benchmark (Antes vs Despues)', () => {
     console.log(`P12_BACKEND_${phase.toUpperCase()}=${JSON.stringify(result)}`);
   });
 });
-

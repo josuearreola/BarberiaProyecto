@@ -15,34 +15,38 @@ export class CsrfMiddleware implements NestMiddleware {
     }
 
     const sessionSameSite =
-      (process.env.SESSION_SAME_SITE as 'lax' | 'strict' | 'none' | undefined) ||
-      'lax';
+      (process.env.SESSION_SAME_SITE as
+        'lax' | 'strict' | 'none' | undefined) || 'lax';
 
     // 2. Establecer la cookie XSRF-TOKEN para que Angular la lea automáticamente
     // Angular busca esta cookie por defecto y la envía de vuelta en la cabecera 'X-XSRF-TOKEN'
     res.cookie('XSRF-TOKEN', csrfToken, {
       httpOnly: false, // Debe ser false para que Angular pueda leerla desde JS
       sameSite: sessionSameSite,
-      secure: sessionSameSite === 'none' ? true : (process.env.NODE_ENV === 'production'),
+      secure:
+        sessionSameSite === 'none'
+          ? true
+          : process.env.NODE_ENV === 'production',
       path: '/',
     });
 
     // 3. Validar peticiones de modificación (POST, PUT, PATCH, DELETE)
     const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
-    
+
     // Bypass para aplicaciones móviles y dispositivos inteligentes
     const isAppClient = req.headers['x-app-client'] === 'barberia-smart-device';
 
     // Bypass para frontend desacoplado en Vercel/localhost ya que los navegadores bloquean
     // el acceso de JS a cookies de dominios cruzados (cross-site) para leer el XSRF-TOKEN.
     // La seguridad queda garantizada por CORS y el control de orígenes del backend.
-    const isTrustedOrigin = req.headers.origin && (
-      req.headers.origin.includes('vercel.app') ||
-      req.headers.origin.includes('localhost')
-    );
+    const isTrustedOrigin =
+      req.headers.origin &&
+      (req.headers.origin.includes('vercel.app') ||
+        req.headers.origin.includes('localhost'));
 
     if (!safeMethods.includes(req.method) && !isAppClient && !isTrustedOrigin) {
-      const headerToken = req.headers['x-xsrf-token'] || req.headers['x-csrf-token'];
+      const headerToken =
+        req.headers['x-xsrf-token'] || req.headers['x-csrf-token'];
       const bodyToken = req.body ? req.body._csrf : null;
 
       const receivedToken = headerToken || bodyToken;
